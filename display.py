@@ -1,20 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from my_types import *
 
-# def plot_tri_mesh(img: np.ndarray, points: np.ndarray, triangulation) -> None:
-#     """
-#     Displays the triangular mesh of an image
-#     """
-#     plt.imshow(img)
-#     plt.triplot(points[:, 0], points[:, 1], triangulation.simplices)
-#     plt.plot(points[:, 0], points[:, 1], "o")
-#     plt.show()
+def show_landmarks(image, landmarks):
+    """Show image with landmarks"""
+    plt.imshow(image, cmap='gray')
+    plt.scatter(landmarks[:, 0], landmarks[:, 1], s=10, marker='.', c='r')
+    plt.pause(0.001)  # pause a bit so that plots are updated
 
-def plot_points(img: np.ndarray, indices: np.ndarray):
-    assert_img_type(img)
-    assert_indices(indices)
-    
-    plt.imshow(img, cmap='gray')
-    plt.plot(indices, "o")
-    plt.show()
+# plt.figure()
+# show_landmarks(io.imread(os.path.join('data/faces/', img_name)),
+#                landmarks)
+# plt.show()
