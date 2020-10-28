@@ -29,7 +29,6 @@ def to_img_arr(x: ToImgArray, as_gray=False) -> np.ndarray:
         else:
             raise ValueError(f"Didn't expect type {type(x)}")
 
-
 def to_points(x: ToPoints) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return x
@@ -89,3 +88,16 @@ def assert_points(points: np.ndarray) -> bool:
     assert points.shape[1] == 2
     assert (points >= 0).all()
     return True
+
+def assert_is_point(point: np.ndarray) -> bool:
+    assert isinstance(point, np.ndarray)
+    assert point.shape == (2,)
+    assert (point >= 0).all()
+    return True
+
+class Data:
+    def __init__(self, img:np.ndarray, points:np.ndarray):
+        assert_img_type(img)
+        assert_points(points)
+        self.img = img
+        self.points = points

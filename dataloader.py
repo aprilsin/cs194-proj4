@@ -3,6 +3,7 @@
 
 import numpy as np
 import my_types
+import skimage.transform
 
 root_dir = "./imm_face_db/"
 	
@@ -28,10 +29,24 @@ def load_nosepoint(person_idx, viewpt_idx):
     nose_keypoint = np.array(landmark).astype("float32")[-5]
     return nose_keypoint
 
+def data_augmentation_part1(img:np.ndarray, nose_point):
+    my_types.assert_img_type(img)
+    my_types.assert_is_point(nose_point)
+    
+    img = skimage.transform.imresize(img, output_shape=(80, 60), preserve_range=True)
+    my_types.assert_img_type(img)
+    img = img - 0.5 # normalize values to range [-0.5, 0.5]
+    
+#     my_types.assert_img_type(img)
+    return img
+
 def read_img_part1(person_idx, viewpt_idx):
     gender = get_gender(person_idx)
     file_name = root_dir + "{:02d}-{:d}{}.jpg".format(person_idx, viewpt_idx, gender)
-    return my_types.to_img_arr(file_name, as_gray=True)
+    img = my_types.to_img_arr(file_name, as_gray=True)
+#     augmented = data_augmentation(img)
+#     return augmented
+    return img
 
 # Dataloader for Part 2
 def load_keypoints(person_idx, viewpt_idx):
