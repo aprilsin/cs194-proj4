@@ -2,6 +2,7 @@ import os
 import pickle
 from pathlib import Path
 from typing import Sequence, Union
+from dataclasses import dataclass
 
 import numpy as np
 import skimage.io as io
@@ -62,23 +63,23 @@ def to_points(x: ToPoints) -> np.ndarray:
 def assert_img_type(img: np.ndarray) -> bool:
     """ Check image data type """
     assert isinstance(img, np.ndarray), f"expect ndarray but got {type(img)}"
-    assert img.dtype == "float64", img.dtype
-    assert np.max(img) <= 1.0 and np.min(img) >= 0.0, (np.min(img), np.max(img))
-    assert np.ndim(img) == 2 or np.ndim(img) == 3, np.ndim(img)
+    assert img.dtype == np.float64, img.dtype
+    assert img.max() <= 1.0 and img.min() >= 0.0, (img.min(), img.max())
+    assert img.ndim == 2 or img.ndim == 3, img.ndim
     return True
 
 
 def assert_is_triangle(triangle: np.ndarray) -> bool:
     """ Check image data type """
     assert triangle.shape == (3, 2), triangle.shape
-    assert (triangle >= 0).all(), triangle
+    assert (triangle >= 0).all(), triangle.nonzero()
     return True
 
 
 def assert_indices(indices: np.ndarray) -> bool:
     assert isinstance(indices, np.ndarray)
-    assert indices.dtype == "int"
-    assert (indices >= 0).all()
+    assert indices.dtype == Index, indices.dtype
+    assert (indices >= 0).all(), indices.nonzero()
     assert indices.shape[1] == 2
     return True
 
@@ -96,8 +97,27 @@ def assert_is_point(point: np.ndarray) -> bool:
     return True
 
 class Data:
-    def __init__(self, img:np.ndarray, points:np.ndarray):
+    def __init__(self, img:np.ndarray, indices:np.ndarray):
         assert_img_type(img)
-        assert_points(points)
+        assert_indices(indices)
         self.img = img
-        self.points = points
+        self.indices = indices
+        
+@dataclass
+class Index:
+    row : int
+    col : int
+
+def valid_index(img:np.ndarray, idx:Index):
+    pass
+
+def to_int(num):
+    if num.dtype == int:
+        return num
+    else:
+        return np.int(np.round(num))
+
+# def unnormalize(points, base):
+#     assert_
+#     assert num.dtype == float, num.dtype
+#     return num * base

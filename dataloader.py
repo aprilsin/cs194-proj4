@@ -1,11 +1,11 @@
 # This file is for loading images and keypoints customized for the Danes dataset.
 # data source: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
-
+import torch
 import numpy as np
 import my_types
 import skimage.transform
 
-root_dir = "./imm_face_db/"
+ROOT_DIR = "./imm_face_db/"
 	
 def get_gender(person_idx):
 	assert person_idx in np.arange(1, 40+1)
@@ -18,15 +18,15 @@ def get_gender(person_idx):
 def load_nosepoint(person_idx, viewpt_idx):
     # load all facial keypoints/landmarks
     gender = get_gender(person_idx)
-    file = open(root_dir + "{:02d}-{:d}{}.asf".format(person_idx, viewpt_idx, gender))
+    file = open(ROOT_DIR + "{:02d}-{:d}{}.asf".format(person_idx, viewpt_idx, gender))
     points = file.readlines()[16:74]
     landmark = []
     for point in points:
         x, y = point.split("\t")[2:4]
         landmark.append([float(x), float(y)])
-
     # the nose keypoint
-    nose_keypoint = np.array(landmark).astype("float32")[-5]
+    NOSE_INDEX = -5
+    nose_keypoint = torch.tensor(landmark,dtype=torch.float32)[NOSE_INDEX]
     return nose_keypoint
 
 def data_augmentation_part1(img:np.ndarray, nose_point):
@@ -42,7 +42,7 @@ def data_augmentation_part1(img:np.ndarray, nose_point):
 
 def read_img_part1(person_idx, viewpt_idx):
     gender = get_gender(person_idx)
-    file_name = root_dir + "{:02d}-{:d}{}.jpg".format(person_idx, viewpt_idx, gender)
+    file_name = ROOT_DIR + "{:02d}-{:d}{}.jpg".format(person_idx, viewpt_idx, gender)
     img = my_types.to_img_arr(file_name, as_gray=True)
 #     augmented = data_augmentation(img)
 #     return augmented
@@ -52,7 +52,7 @@ def read_img_part1(person_idx, viewpt_idx):
 def load_keypoints(person_idx, viewpt_idx):
     # load all facial keypoints/landmarks
     gender = get_gender(person_idx)
-    file = open(root_dir + "{:02d}-{:d}{}.asf".format(person_idx, viewpt_idx, gender))
+    file = open(ROOT_DIR + "{:02d}-{:d}{}.asf".format(person_idx, viewpt_idx, gender))
     points = file.readlines()[16:74]
     landmark = []
 
