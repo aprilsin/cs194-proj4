@@ -114,22 +114,28 @@ def assert_is_triangle(triangle: np.ndarray) -> bool:
 # 
 def assert_indices(indices: np.ndarray) -> bool:
     assert isinstance(indices, np.ndarray)
-    assert indices.dtype == object, indices.dtype # should be of type Index
-#     assert (indices >= 0).all(), indices.nonzero()
-#     assert indices.shape[1] == 2
+#     assert indices.dtype == object, indices.dtype # should be of type Index
+    assert (indices >= 0).all(), indices.nonzero()
+    assert indices.shape[1] == 2
     return True
 
-def to_int(num):
-    if num.dtype == int:
-        return num
-    else:
-        return np.int(np.round(num))
-    
+# ToIndex = Union[np.ndarray, List, Array, Tuple]
+# def to_index(coord: ToIndex, (h, w)):
+#     if not isinstance(coord, ToIndex):
+#         raise ValueError(f"Didn't expect type {type(x)}")
+#     coord.dtype == int:
+#         return coord
+#     else:
+#         return np.int(np.round(num))
+#     else:
 @dataclass
 class Index:
     row : int
     col : int
 
+def index_to_arr(idx:Index)->np.ndarray:
+    assert isinstance(idx, Index)
+    return np.ndarray
 
 #
 # Dataset
@@ -144,7 +150,7 @@ class Data:
         self.img = img
         self.indices = indices # a list of keypoints
 
-    def assert_valid_index(self, img:np.ndarray, idx:Index):
+    def assert_valid_index(self, img:np.ndarray, idx:np.ndarray):
         h, w = img.shape
         assert idx.row >= 0 and idx.row < h, f"invalid row index {idx.row} for image of shape {img.shape}"
         assert idx.col >= 0 and idx.col < w, f"invalid col index {idx.row} for image of shape {img.shape}"

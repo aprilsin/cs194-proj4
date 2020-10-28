@@ -16,5 +16,5 @@ def plot_points(img: np.ndarray, indices: np.ndarray):
     assert_indices(indices)
     
     plt.imshow(img, cmap='gray')
-    plt.plot(points, "o")
+    plt.plot(indices, "o")
     plt.show()

@@ -1,7 +1,7 @@
 # This file is for loading images and keypoints customized for the Danes dataset.
 # data source: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
 
-# import torch
+import torch
 import numpy as np
 import my_types
 import skimage.transform
