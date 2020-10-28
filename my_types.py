@@ -10,13 +10,30 @@ from skimage.util import img_as_float
 
 from constants import *
 
-ToImgArray = Union[os.PathLike, np.ndarray]
+#
+# IMAGE ARRAYS
+#
 ZeroOneFloatArray = np.ndarray
+def assert_zero_one_img(x: np.ndarray):
+    assert isinstance(img, np.ndarray), f"expect ndarray but got {type(img)}"
+    assert img.dtype == np.float64, img.dtype
+    assert img.max() <= 1.0 and img.min() >= 0.0, (img.min(), img.max())
+    return True
+        
 UbyteArray = np.ndarray
+def assert_ubyte_img(x: np.ndarray):
+    assert isinstance(img, np.ndarray), f"expect ndarray but got {type(img)}"
+    assert img.dtype == int, img.dtype
+    assert img.max() <= 255 and img.min() >= 0, (img.min(), img.max())
+    return True
 
-ToPoints = Union[os.PathLike, np.ndarray]
-Triangle = np.ndarray
+def assert_img_type(img: np.ndarray) -> bool:
+    """ Check image data type """
+    assert_zero_one_img(img)
+    assert img.ndim == 2 or img.ndim == 3, img.ndim
+    return True
 
+ToImgArray = Union[os.PathLike, np.ndarray]
 def to_img_arr(x: ToImgArray, as_gray=False) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return img_as_float(x).clip(0, 1)
@@ -29,7 +46,23 @@ def to_img_arr(x: ToImgArray, as_gray=False) -> np.ndarray:
             return img
         else:
             raise ValueError(f"Didn't expect type {type(x)}")
+#
+# PIXEL VALUES / POINTS
+#
 
+def assert_points(points: np.ndarray) -> bool:
+    assert isinstance(points, np.ndarray)
+    assert points.shape[1] == 2
+    assert (points >= 0).all()
+    return True
+
+def assert_is_point(point: np.ndarray) -> bool:
+    assert isinstance(point, np.ndarray)
+    assert point.shape == (2,)
+    assert (point >= 0).all()
+    return True
+
+ToPoints = Union[os.PathLike, np.ndarray]
 def to_points(x: ToPoints) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return x
@@ -59,23 +92,19 @@ def to_points(x: ToPoints) -> np.ndarray:
         else:
             raise ValueError(f"Didn't expect type {type(x)}")
 
-
-def assert_img_type(img: np.ndarray) -> bool:
-    """ Check image data type """
-    assert isinstance(img, np.ndarray), f"expect ndarray but got {type(img)}"
-    assert img.dtype == np.float64, img.dtype
-    assert img.max() <= 1.0 and img.min() >= 0.0, (img.min(), img.max())
-    assert img.ndim == 2 or img.ndim == 3, img.ndim
-    return True
-
-
+#
+# triangle
+#
+Triangle = np.ndarray
 def assert_is_triangle(triangle: np.ndarray) -> bool:
     """ Check image data type """
     assert triangle.shape == (3, 2), triangle.shape
     assert (triangle >= 0).all(), triangle.nonzero()
     return True
 
-
+#
+# Indices
+# 
 def assert_indices(indices: np.ndarray) -> bool:
     assert isinstance(indices, np.ndarray)
     assert indices.dtype == Index, indices.dtype
@@ -83,39 +112,30 @@ def assert_indices(indices: np.ndarray) -> bool:
     assert indices.shape[1] == 2
     return True
 
+def to_int(num):
+    if num.dtype == int:
+        return num
+    else:
+        return np.int(np.round(num))
+    
+def valid_index(img:np.ndarray, idx:Index):
+    pass
 
-def assert_points(points: np.ndarray) -> bool:
-    assert isinstance(points, np.ndarray)
-    assert points.shape[1] == 2
-    assert (points >= 0).all()
-    return True
+@dataclass
+class Index:
+    row : int
+    col : int
 
-def assert_is_point(point: np.ndarray) -> bool:
-    assert isinstance(point, np.ndarray)
-    assert point.shape == (2,)
-    assert (point >= 0).all()
-    return True
-
+#
+# Dataset
+#
 class Data:
     def __init__(self, img:np.ndarray, indices:np.ndarray):
         assert_img_type(img)
         assert_indices(indices)
         self.img = img
         self.indices = indices
-        
-@dataclass
-class Index:
-    row : int
-    col : int
 
-def valid_index(img:np.ndarray, idx:Index):
-    pass
-
-def to_int(num):
-    if num.dtype == int:
-        return num
-    else:
-        return np.int(np.round(num))
 
 # def unnormalize(points, base):
 #     assert_
