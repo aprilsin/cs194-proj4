@@ -14,14 +14,14 @@ from constants import *
 # IMAGE ARRAYS
 #
 ZeroOneFloatArray = np.ndarray
-def assert_zero_one_img(x: np.ndarray):
+def assert_zero_one_img(img: np.ndarray):
     assert isinstance(img, np.ndarray), f"expect ndarray but got {type(img)}"
     assert img.dtype == np.float64, img.dtype
     assert img.max() <= 1.0 and img.min() >= 0.0, (img.min(), img.max())
     return True
         
 UbyteArray = np.ndarray
-def assert_ubyte_img(x: np.ndarray):
+def assert_ubyte_img(img: np.ndarray):
     assert isinstance(img, np.ndarray), f"expect ndarray but got {type(img)}"
     assert img.dtype == int, img.dtype
     assert img.max() <= 255 and img.min() >= 0, (img.min(), img.max())
@@ -49,6 +49,13 @@ def to_img_arr(x: ToImgArray, as_gray=False) -> np.ndarray:
 #
 # PIXEL VALUES / POINTS
 #
+def assert_points_part1(x: np.ndarray) -> bool:
+    assert isinstance(x, np.ndarray)
+    assert x.shape[1] == 2
+    #range is normalized to within -0.5 and 0.5
+    assert x.dtype == np.float64, img.dtype
+    assert x.max() <= 0.5 and x.min() >= -0.5, (x.min(), img.max())
+    return True
 
 def assert_points(points: np.ndarray) -> bool:
     assert isinstance(points, np.ndarray)
@@ -56,8 +63,8 @@ def assert_points(points: np.ndarray) -> bool:
     assert (points >= 0).all()
     return True
 
-def assert_is_point(point: np.ndarray) -> bool:
-    assert isinstance(point, np.ndarray)
+def assert_is_point(point) -> bool:
+    assert isinstance(point, Union[List, Array, np.ndarray])
     assert point.shape == (2,)
     assert (point >= 0).all()
     return True
@@ -107,9 +114,9 @@ def assert_is_triangle(triangle: np.ndarray) -> bool:
 # 
 def assert_indices(indices: np.ndarray) -> bool:
     assert isinstance(indices, np.ndarray)
-    assert indices.dtype == Index, indices.dtype
-    assert (indices >= 0).all(), indices.nonzero()
-    assert indices.shape[1] == 2
+    assert indices.dtype == object, indices.dtype # should be of type Index
+#     assert (indices >= 0).all(), indices.nonzero()
+#     assert indices.shape[1] == 2
     return True
 
 def to_int(num):
@@ -118,23 +125,30 @@ def to_int(num):
     else:
         return np.int(np.round(num))
     
-def valid_index(img:np.ndarray, idx:Index):
-    pass
-
 @dataclass
 class Index:
     row : int
     col : int
+
 
 #
 # Dataset
 #
 class Data:
     def __init__(self, img:np.ndarray, indices:np.ndarray):
+        ## FIXME: make this work for tensors
         assert_img_type(img)
         assert_indices(indices)
+        for idx in indices:
+            self.assert_valid_index(img, idx)
         self.img = img
-        self.indices = indices
+        self.indices = indices # a list of keypoints
+
+    def assert_valid_index(self, img:np.ndarray, idx:Index):
+        h, w = img.shape
+        assert idx.row >= 0 and idx.row < h, f"invalid row index {idx.row} for image of shape {img.shape}"
+        assert idx.col >= 0 and idx.col < w, f"invalid col index {idx.row} for image of shape {img.shape}"
+        return True
 
 
 # def unnormalize(points, base):
