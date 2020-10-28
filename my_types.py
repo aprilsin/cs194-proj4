@@ -16,14 +16,13 @@ UbyteArray = np.ndarray
 ToPoints = Union[os.PathLike, np.ndarray]
 Triangle = np.ndarray
 
-
-def to_img_arr(x: ToImgArray) -> np.ndarray:
+def to_img_arr(x: ToImgArray, as_gray=False) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return img_as_float(x).clip(0, 1)
     elif isinstance(x, (str, Path, os.PathLike)):
         x = Path(x)
         if x.suffix in (".jpeg", ".jpg"):
-            img = io.imread(x)
+            img = io.imread(x, as_gray=as_gray)
             img = img_as_float(img)
             assert_img_type(img)
             return img
@@ -66,7 +65,7 @@ def assert_img_type(img: np.ndarray) -> bool:
     assert isinstance(img, np.ndarray), f"expect ndarray but got {type(img)}"
     assert img.dtype == "float64", img.dtype
     assert np.max(img) <= 1.0 and np.min(img) >= 0.0, (np.min(img), np.max(img))
-    assert np.ndim(img) == 3
+    assert np.ndim(img) == 2 or np.ndim(img) == 3, np.ndim(img)
     return True
 
 
