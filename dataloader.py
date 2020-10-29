@@ -19,19 +19,23 @@ def get_gender(person_idx):
 
 def load_points_from_asf(file) -> np.ndarray:
     lines_read = file.readlines()
+    
     num_pts = int(lines_read[9])
     assert num_pts == 58, num_pts
-    lines = lines_read[16:num_pts+16] # should be [16, 74]
-
+    
+    lines = lines_read[16:num_pts+16] # basically should be [16, 74]
     points = []
+    IMG_WIDTH = 640
+    IMG_HEIGHT = 480
     for line in lines:
-        data = line.split(" \t")
-        x, y = float(data[2]), float(data[3])
-        r, c = y, x
-        points.append([float(r), float(c)])
-        print(len(points))
+        data = line.split("\t")
+        x, y = float(data[2]) * IMG_WIDTH, float(data[3]) * IMG_HEIGHT
+        points.append([x, y])
+    
     points = np.array(points).astype(np.float32)
-#     assert len(points) == num_pts, len(points)
+    print("row:", points[:, 0].min(), points[:, 0].max())
+    print("col:", points[:, 1].min(), points[:, 1].max())
+    assert len(points) == num_pts, len(points)
     return points
 
 # Dataloader for Part 1
@@ -42,27 +46,18 @@ def load_nosepoint(person_idx, viewpt_idx):
     assert 1 <= person_idx <= 40, person_idx
     assert 1 <= viewpt_idx <= 6, viewpt_idx
     
-    # load all facial keypoints/landmarks
+    # load all facial keypoints/keypoints
     gender = get_gender(person_idx)
     file = open(ROOT_DIR + "{:02d}-{:d}{}.asf".format(person_idx, viewpt_idx, gender))
-#     points = file.readlines()[16:74]
-#     landmark = []
-#     for point in points:
-#         x, y = point.split("\t")[2:4]
-#         r, c = y, x
-#         landmark.append([float(r), float(c)])
     landmark = load_points_from_asf(file)
-    print(landmark.shape)
+
     # the nose keypoint
     NOSE_INDEX = 53
     nose_keypoint = landmark[NOSE_INDEX]
-#     print("input nose point is: ", nose_keypoint)
-#     nose_keypoint = torch.tensor(landmark,dtype=torch.float32)[NOSE_INDEX]
+    
+    print("input nose keypoint = ", nose_keypoint)
+    
     return np.array([nose_keypoint])
-
-def data_augment_part1(img:np.ndarray, nose_point):
-    img = skimage.transform.imresize(img, output_shape=(80, 60), preserve_range=True)
-    return img
 
 def read_img_part1(person_idx, viewpt_idx):
     """ input person_idx and viewpt_idx should be zero indexed"""
@@ -95,7 +90,7 @@ class Rescale(object):
         self.output_size = output_size
 
     def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
+        image, keypoints = sample['image'], sample['keypoints']
 
         h, w = image.shape[:2]
         if isinstance(self.output_size, int):
@@ -110,11 +105,11 @@ class Rescale(object):
 
         img = transform.resize(image, (new_h, new_w))
 
-        # h and w are swapped for landmarks because for images,
+        # h and w are swapped for keypoints because for images,
         # x and y axes are axis 1 and 0 respectively
-        landmarks = landmarks * [new_w / w, new_h / h]
+        keypoints = keypoints * [new_w / w, new_h / h]
 
-        return {'image': img, 'landmarks': landmarks}
+        return {'image': img, 'keypoints': keypoints}
 
 
 class RandomCrop(object):
@@ -134,7 +129,7 @@ class RandomCrop(object):
             self.output_size = output_size
 
     def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
+        image, keypoints = sample['image'], sample['keypoints']
 
         h, w = image.shape[:2]
         new_h, new_w = self.output_size
@@ -145,9 +140,9 @@ class RandomCrop(object):
         image = image[top: top + new_h,
                       left: left + new_w]
 
-        landmarks = landmarks - [left, top]
+        keypoints = keypoints - [left, top]
 
-        return {'image': image, 'landmarks': landmarks}
+        return {'image': image, 'keypoints': keypoints}
 
 class CenterCrop(object):
     """Crop center of the image in a sample.
@@ -166,7 +161,7 @@ class CenterCrop(object):
             self.output_size = output_size
 
     def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
+        image, keypoints = sample['image'], sample['keypoints']
 
         h, w = image.shape[:2]
         new_h, new_w = self.output_size
@@ -178,22 +173,22 @@ class CenterCrop(object):
         image = image[top: top + new_h,
                       left: left + new_w]
 
-        landmarks = landmarks - [left, top]
+        keypoints = keypoints - [left, top]
 
-        return {'image': image, 'landmarks': landmarks}
+        return {'image': image, 'keypoints': keypoints}
     
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
     def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
+        image, keypoints = sample['image'], sample['keypoints']
 
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
-                'landmarks': torch.from_numpy(landmarks)}
+                'keypoints': torch.from_numpy(keypoints)}
 
 class NoseKeypointDataset(Dataset):
     """Nose Keypoint dataset."""
@@ -213,31 +208,28 @@ class NoseKeypointDataset(Dataset):
             for v in viewpt_idx:
                 image = read_img_part1(p, v)
                 nosepoint = load_nosepoint(p, v) # point loaded from asf file is in range [0, 1]
-                nosepoint[:, 0] *= image.shape[0]
-                nosepoint[:, 1] *= image.shape[1]
-#                 print("input nose point is: ", nosepoint)
                 key = (p, v)
                 self.data[key] = (image, nosepoint)
 
     def __len__(self):
-        return len(self.landmarks)
+        return len(self.keypoints)
 
     def __getitem__(self, idx):
         if type(idx) == int:
             key = list(self.data.keys())[idx]
-            image, landmarks = self.data[key]
+            image, keypoints = self.data[key]
         else:
             if torch.is_tensor(idx):
                 idx = idx.tolist()
             image = []
-            landmarks = []
+            keypoints = []
             for i in idx:
                 key = self.data.keys()[i]
                 img, pts = self.data[key]
                 image.append(img)
-                landmarks.append(pts)
+                keypoints.append(pts)
 
-        sample = {'image': image, 'landmarks': landmarks}
+        sample = {'image': image, 'keypoints': keypoints}
 
         if self.transform:
             sample = self.transform(sample)
@@ -252,21 +244,10 @@ def load_keypoints(person_idx, viewpt_idx):
     viewpt_idx += 1
     assert 1 <= person_idx <= 40, person_idx
     assert 1 <= viewpt_idx <= 6, viewpt_idx
-    # load all facial keypoints/landmarks
+    # load all facial keypoints/keypoints
     gender = get_gender(person_idx)
     file = open(ROOT_DIR + "{:02d}-{:d}{}.asf".format(person_idx, viewpt_idx, gender))
-#     keypoints = load_points_from_asf(file)
-    points = file.readlines()[16:74]
-    landmark = []
-
-    for point in points:
-        x, y = point.split("\t")[2], point.split("\t")[3]
-        r, c = y, x
-        print(float(r)*480, float(c)*640)
-        landmark.append([float(r), float(c)])
-
-    # the nose keypoint
-    keypoints = np.array(landmark).astype("float32")
+    keypoints = load_points_from_asf(file)
     return keypoints
 
 class FaceKeypointsDataset(Dataset):
@@ -287,31 +268,29 @@ class FaceKeypointsDataset(Dataset):
             for v in viewpt_idx:
                 image = read_img_part1(p, v)
                 keypoints = load_keypoints(p, v) # point loaded from asf file is in range [0, 1]
-                keypoints[:, 0] *= image.shape[0]
-                keypoints[:, 1] *= image.shape[1]
 #                 print("input nose point is: ", nosepoint)
                 key = (p, v)
                 self.data[key] = (image, keypoints)
 
     def __len__(self):
-        return len(self.landmarks)
+        return len(self.keypoints)
 
     def __getitem__(self, idx):
         if type(idx) == int:
             key = list(self.data.keys())[idx]
-            image, landmarks = self.data[key]
+            image, keypoints = self.data[key]
         else:
             if torch.is_tensor(idx):
                 idx = idx.tolist()
             image = []
-            landmarks = []
+            keypoints = []
             for i in idx:
                 key = self.data.keys()[i]
                 img, pts = self.data[key]
                 image.append(img)
-                landmarks.append(pts)
+                keypoints.append(pts)
 
-        sample = {'image': image, 'landmarks': landmarks}
+        sample = {'image': image, 'keypoints': keypoints}
 
         if self.transform:
             sample = self.transform(sample)
