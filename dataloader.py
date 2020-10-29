@@ -33,8 +33,6 @@ def load_points_from_asf(file) -> np.ndarray:
         points.append([x, y])
     
     points = np.array(points).astype(np.float32)
-    print("row:", points[:, 0].min(), points[:, 0].max())
-    print("col:", points[:, 1].min(), points[:, 1].max())
     assert len(points) == num_pts, len(points)
     return points
 
@@ -52,10 +50,8 @@ def load_nosepoint(person_idx, viewpt_idx):
     landmark = load_points_from_asf(file)
 
     # the nose keypoint
-    NOSE_INDEX = 53
+    NOSE_INDEX = 53 - 1 # 53rd keypoint, shift to zero index
     nose_keypoint = landmark[NOSE_INDEX]
-    
-    print("input nose keypoint = ", nose_keypoint)
     
     return np.array([nose_keypoint])
 
@@ -207,7 +203,7 @@ class NoseKeypointDataset(Dataset):
         for p in person_idx:
             for v in viewpt_idx:
                 image = read_img_part1(p, v)
-                nosepoint = load_nosepoint(p, v) # point loaded from asf file is in range [0, 1]
+                nosepoint = load_nosepoint(p, v)
                 key = (p, v)
                 self.data[key] = (image, nosepoint)
 
@@ -267,8 +263,7 @@ class FaceKeypointsDataset(Dataset):
         for p in person_idx:
             for v in viewpt_idx:
                 image = read_img_part1(p, v)
-                keypoints = load_keypoints(p, v) # point loaded from asf file is in range [0, 1]
-#                 print("input nose point is: ", nosepoint)
+                keypoints = load_keypoints(p, v)
                 key = (p, v)
                 self.data[key] = (image, keypoints)
 
