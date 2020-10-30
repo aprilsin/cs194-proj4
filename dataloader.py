@@ -71,13 +71,13 @@ from torchvision import utils
 ROOT_DIR = Path("imm_face_db")
 
 
-def get_gender(person_idx: int) -> str:
-    """For filename handling."""
-    assert 1 <= person_idx <= 40, person_idx
+# def get_gender(person_idx: int) -> str:
+#     """For filename handling."""
+#     assert 1 <= person_idx <= 40, person_idx
 
-    female_idx = [8, 12, 14, 15, 22, 30, 35]
+#     female_idx = [8, 12, 14, 15, 22, 30, 35]
 
-    return "f" if person_idx in female_idx else "m"
+#     return "f" if person_idx in female_idx else "m"
 
 
 def load_asf(file: os.PathLike) -> Tensor:
@@ -116,7 +116,12 @@ def load_img(img_file: Path):
 
 
 class FaceKeypointsDataset(Dataset):
-    def __init__(self, idxs: Sequence[int], root_dir: Path = ROOT_DIR) -> None:
+    def __init__(
+        self,
+        idxs: Sequence[int],
+        root_dir: Path = ROOT_DIR,
+        transform: Optional[Callable] = None,
+    ) -> None:
         self.root_dir = root_dir
         self.img_files = sorted(
             f for f in self.root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
@@ -125,6 +130,7 @@ class FaceKeypointsDataset(Dataset):
             f for f in self.root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
         )
         self.len = len(self.img_files)
+        self.transform = transform
 
     def __len__(self) -> int:
         return self.len
@@ -136,12 +142,34 @@ class FaceKeypointsDataset(Dataset):
         img = load_img(img_name)
         h, w = img.shape[-2:]
         points = load_asf(asf_name)
-        # N (x,y)
         points[:, 0] *= w
         points[:, 1] *= h
         # TODO is rounding necessary?
         # points=points.round()
+        if self.transform:
+            img, points = self.transform(img, points)
+
         return img, points
+
+
+class NoseKeypointDataset(FaceKeypointsDataset):
+    def __init__(
+        self,
+        idxs: Sequence[int],
+        root_dir: Path = ROOT_DIR,
+        transform: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(idxs, root_dir, transform)
+
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        # TODO add augmentations with if random.random()<THRESHOLD
+
+        img, points = super().__getitem__(idx)
+
+        NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
+        nose_point = points[NOSE_INDEX].reshape(1, 2)
+
+        return img, nose_point
 
 
 if __name__ == "__main__":
