@@ -126,6 +126,9 @@ class FaceKeypointsDataset(Dataset):
         )
         self.len = len(self.img_files)
 
+    def __len__(self) -> int:
+        return self.len
+
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         # TODO add augmentations with if random.random()<THRESHOLD
 
@@ -138,11 +141,7 @@ class FaceKeypointsDataset(Dataset):
         points[:, 1] *= h
         # TODO is rounding necessary?
         # points=points.round()
-
         return img, points
-
-    def __len__(self) -> int:
-        return self.len
 
 
 if __name__ == "__main__":
