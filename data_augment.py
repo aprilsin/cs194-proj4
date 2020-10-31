@@ -49,6 +49,7 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     center = (h / 2, w / 2)
 
     rotate_deg = np.random.randint(-15, 15)
+
     print(rotate_deg)
     image = ST.rotate(image, angle=rotate_deg, center=(0, 0))
 
@@ -68,12 +69,10 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     return image, keypoints
 
 
-def rotation_mat(rot_deg, center):
-    center_h, center_w = center
-    center_x, center_y = center_w, center_h
+def rotation_mat(rot_deg):
     theta = np.radians(rot_deg)
     c, s = np.cos(theta), np.sin(theta)
-    R = np.array(((c, -s, center_x - center_y), (s, c, center_x + center_y)))
+    R = np.array(((c, -s), (s, c)))
     return R
 
 
