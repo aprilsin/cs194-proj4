@@ -4,6 +4,7 @@ import argparse
 import functools
 import itertools
 import logging
+import math
 import os
 import random
 import re
@@ -11,27 +12,17 @@ import shutil
 import subprocess
 import sys
 import typing
+import xml.etree.ElementTree as ET
 from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (
-    Callable,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    NamedTuple,
-    NewType,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
+                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
 
 import numpy as np
+import numpy as np
+import pandas as pd
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -46,16 +37,14 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import utils
 
-import data_augment
-
 DANES_ROOT = Path("imm_faces_db")
-IBUG_ROOD = Path("ibug_300W_large_face_landmark_dataset")
+IBUG_ROOT = Path("ibug_300W_large_face_landmark_dataset")
 assert DANES_ROOT.exists()
-assert IBUD_ROOT.exists()
+assert IBUG_ROOT.exists()
 
 
 def assert_points(pts):
-    assert isinstance(points, Tensor), type(points)
+    assert isinstance(pts, Tensor), type(pts)
     assert pts.ndim == 2, pts.shape
     assert pts.shape[1] == 2, pts.shape
 
@@ -87,17 +76,11 @@ def load_asf(file: os.PathLike) -> Tensor:
     return points
 
 
-# def load_nose(file: os.PathLike) -> Tensor:
-#     points = load_asf(file)
-#     NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
-#     nose_point = points[NOSE_INDEX].reshape(1, 2)
-#     return nose_point
-
-
-import xml.etree.ElementTree as ET
-import numpy as np
-import os
-import pandas as pd
+def load_nose(file: os.PathLike) -> Tensor:
+    points = load_asf(file)
+    NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
+    nose_point = points[NOSE_INDEX].reshape(1, 2)
+    return nose_point
 
 
 def load_xml():
@@ -140,7 +123,6 @@ def load_img(img_file: Path):
     return img
 
 
-
 def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     image = TT.Grayscale()
     h, w = image.shape[-2:]
@@ -150,7 +132,7 @@ def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     image = TT.Resize((out_h, out_w))(image)
     # keypoints[..., 0] = keypoints[..., 0] * out_h / h
     # keypoints[..., 1] = keypoints[..., 1] * out_w / w
-    
+
     return image, keypoints
 
 
@@ -195,6 +177,7 @@ def rotate(point, origin, angle):
     qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     return qx, qy
+
 
 class FaceKeypointsDataset(Dataset):
     def __init__(
