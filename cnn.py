@@ -65,13 +65,13 @@ class FaceFinder(Module):
         super().__init__()
 
         # formula: (N - F) / stride + 1
-        self.C1 = Conv2d(1, 15, 3)
-        self.C2 = Conv2d(15, 28, 3)
-        self.C3 = Conv2d(28, 20, 3)
+        self.C1 = Conv2d(1, 18, 3)
+        self.C2 = Conv2d(18, 24, 3)
+        self.C3 = Conv2d(24, 30, 3)
 
         # FIXME
-        self.C4 = Conv2d(20, 32, 3)
-        self.C5 = Conv2d(32, 25, 3)
+        self.C4 = Conv2d(30, 30, 3)
+        self.C5 = Conv2d(30, 25, 3)
 
         self.FC1 = Linear(25 * 7 * 10, 128)
         self.FC2 = Linear(128, 2 * 58)

@@ -4,6 +4,7 @@ from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
                     NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
 
 import numpy as np
+import skimage.transform as ST
 import torch
 import torchvision.transforms as TT
 
@@ -20,10 +21,30 @@ def part1_augment(image, keypoints):
     return image, keypoints
 
 
-def part2_augment(image, keypoitns):
+def part2_augment(image, keypoints):
 
-    rotate = TT.RandomRotation((-15, 15))
-    image = rotate(image)
-    keypoints = rotate(keypoints)
+    print(image.shape, keypoints.shape)
+    
+    jitter = TT.ColorJitter(brightness=0.3)
+    image = jitter(image)
 
+    # convert tensors to numpy arrays to use skimage
+    image, keypoints = image.numpy(), keypoints.numpy()
+
+    rotate_deg = np.randint(-15, 15)
+    image = ST.rotate(image, rotate_deg)
+    keypoints = rotation_mat(rotate_deg) * keypoints.T
+    # rotate = TT.RandomRotation((-15, 15))
+    # print(rotate.get_params())
+    # image = rotate(image)
+    print(image.shape)
+    # keypoints = rotate(keypoints)
+
+    print(image.shape, keypoints.shape)
     return image, keypoints
+
+def rotation_mat(rot_deg):
+    theta = np.radians(rot_deg)
+    c, s = np.cos(theta), np.sin(theta)
+    R = np.array(((c, -s), (s, c)))
+    return R
