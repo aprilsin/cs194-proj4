@@ -60,6 +60,13 @@ def assert_points(pts):
     assert isinstance(pts, Tensor), type(pts)
     assert pts.ndim == 2, pts.shape
     assert pts.shape[1] == 2, pts.shape
+
+    # make sure that the keypoints are ratios
+    rows = pts[:, 0]
+    cols = pts[:, 1]
+    # leave some wiggle room so use 1.5 instead of 1
+    assert rows.max() <= 1.5 and cols.max() <= 1.5, f"{rows.max()}, {cols.max()}"
+
     return True
 
 
@@ -274,27 +281,49 @@ class LargeDataset(Dataset):
         img_name = self.root_dir / filename.attrib["file"]
         img = load_img(img_name)
 
+        h, w = img.shape[-2:]
+
         keypts = []
         for num in range(68):
             x_coordinate = int(filename[0][num].attrib["x"])
             y_coordinate = int(filename[0][num].attrib["y"])
             keypts.append([x_coordinate, y_coordinate])
-        keypts.append(keypts)
-        keypts = torch.as_tensor(points, dtype=torch.float32)
+        keypts = torch.as_tensor(keypts, dtype=torch.float32)
 
         # crop image background
 
         box = filename[0].attrib
-        print(box)
+        left, top, width, height = (
+            int(box["left"]),
+            int(box["top"]),
+            int(box["width"]),
+            int(box["height"]),
+        )
 
-        # ratio = 1
-        # ver_shift = box['height'] * (r - 1)
-        # hor_shift = box['width'] * (r - 1)
+        # ratio for adjusting box
+        vr = 1.4
+        hr = 1.1
+        ver_shift = int(round(height * (vr - 1) / 2))
+        hor_shift = int(round(width * (hr - 1) / 2))
 
-        # # x, y for the top left corner of the box, w, h for box width and height
-        # crop_params = [box['top'] - ver_shift, box['left'] - hor_shift, box['width'] * r, box['height'] * r]
-        # TT.functional(img, crop_params)
+        # x, y for the top left corner of the box, w, h for box width and height
+        img = TT.functional.crop(
+            img,
+            top=top - ver_shift,
+            left=left - hor_shift,
+            height=int(round(height * vr)),
+            width=int(round(width * hr)),
+        )
 
+        keypts[:, 0] -= left - hor_shift
+        keypts[:, 1] -= top - ver_shift
+        h, w = img.shape[-2:]
+        keypts[:, 0] /= w
+        keypts[:, 1] /= h
+        print(img.shape)
+        # print(keypts)
+        assert_img(img)
+        assert_points(keypts)
         return img, keypts
 
 
