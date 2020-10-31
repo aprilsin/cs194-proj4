@@ -116,30 +116,22 @@ def show_keypoints(
     plt.show()
 
 
-def show_training_progress(loss_per_ep):
-    plt.figure()
-
+def show_progress(loss_per_ep):
     x = np.arange(len(loss_per_ep))
 
-    # Add title and axis names
+    plt.figure()
     plt.title("Training Loss")
-    plt.xlabel("loss")
-    plt.ylabel("epochs")
+    plt.ylabel("loss")
+    plt.xlabel("epochs")
+    plt.xticks(x)
+    plt.plot(loss_per_ep[:, 0])
 
-    plt.plot(x, loss_per_ep)
-
-
-def show_test_progress(loss_per_ep):
     plt.figure()
-
-    x = np.arange(len(loss_per_ep))
-
-    # Add title and axis names
     plt.title("Validation Loss")
-    plt.xlabel("loss")
-    plt.ylabel("epochs")
-
-    plt.plot(x, loss_per_ep)
+    plt.ylabel("loss")
+    plt.xlabel("epochs")
+    plt.xticks(x)
+    plt.plot(loss_per_ep[:, 1])
 
 
 def print_epoch(ep, train_loss, valid_loss) -> None:

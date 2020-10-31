@@ -60,7 +60,7 @@ def test(test_loader, trained_model, show_every=1, save=False):
         print(f"batch{i}", loss.item())
 
         if i % show_every == 0:
-            chosen = [1, 7, 15]
+            chosen = [1, 12, 18]
             for i in chosen:
                 show_keypoints(batched_imgs[i], batched_keypts[i], pred_keypts[i])
 
@@ -68,6 +68,6 @@ def test(test_loader, trained_model, show_every=1, save=False):
         
         # if save:
         #     results.extend((batched_imgs, batched_keypts, pred_keypts))
-        
+
     results = [imgs, keypts, pred_pts]
     return results, sum(loss_per_batch) / len(loss_per_batch)  # return the average loss
