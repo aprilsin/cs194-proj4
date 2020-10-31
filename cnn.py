@@ -43,7 +43,7 @@ class NoseFinder(Module):
         self.C1 = Conv2d(1, 15, 5)
         self.C2 = Conv2d(15, 28, 5)
         self.C3 = Conv2d(28, 20, 5)
-        self.C4 = Identity() # do nothing for now
+        self.C4 = Identity()  # do nothing for now
         self.FC1 = Linear(20 * 5 * 7, 128)
         self.FC2 = Linear(128, 2 * 58)
 

@@ -1,7 +1,9 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import torch
 from typing import Union
+
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+from torch import Tensor
 
 
 def valid_keypoints(image, keypoints):
@@ -18,29 +20,30 @@ def valid_keypoints(image, keypoints):
     return True
 
 
-def to_display_img(image: Union[Tensor, np.ndarray]) -> Union[Tensor, np.ndarray]:
-    if image.ndim == 2:
-        return image
+ToDisplayImage = Union[Tensor, np.ndarray]
 
-    assert isinstance(image, Tensor), type(image)
-    print(image.shape)
-    if image.ndim == 3 or image.ndim == 4:
+
+def to_display_img(img: ToDisplayImage) -> np.ndarray:
+    if img.ndim == 2 and isinstance(img, np.ndarray):
+        return img
+
+    assert isinstance(img, Tensor), type(img)
+    if img.ndim == 2:
+        return img.numpy()
+    if img.ndim == 3 or img.ndim == 4:
         # change channels-first to channels-last format
-        # image = image.permute(1, 2, 0)
+        # img = img.permute(1, 2, 0)
 
         # remove dimension of size 1 for plt
-        image = torch.squeeze(image)
-        return image
+        img = torch.squeeze(img)
+        return img
 
-    # if image.ndim == 4: # we have a batch
-    #     if image.shape[0] == 1:
-    #         image
-    #         return image
+    # if img.ndim == 4: # we have a batch
+    #     if img.shape[0] == 1:
+    #         img
+    #         return img
     else:
         raise ValueError()
-
-
-ToDisplayImage = Union[Tensor, np.ndarray]
 
 
 def show_keypoints(
