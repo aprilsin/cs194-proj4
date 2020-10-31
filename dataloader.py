@@ -17,19 +17,32 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
-                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
+from typing import (
+    Callable,
+    Dict,
+    FrozenSet,
+    Iterable,
+    List,
+    NamedTuple,
+    NewType,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 import numpy as np
 import pandas as pd
+import skimage.transform as ST
 import torch
 import torch.nn.functional as F
 import torchvision
 import torchvision.io as TIO
 import torchvision.transforms as TT
 import torchvision.transforms.functional as TF
-from skimage import io, transform
 from skimage.util import img_as_float
 from torch import Tensor, distributions, nn, tensor
 from torch.nn import Linear, ReLU, Sequential, Softmax
@@ -37,22 +50,24 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import utils
 
-DANES_ROOT = Path("imm_faces_db")
+DANES_ROOT = Path("imm_face_db")
 IBUG_ROOT = Path("ibug_300W_large_face_landmark_dataset")
-assert DANES_ROOT.exists()
-assert IBUG_ROOT.exists()
+# assert DANES_ROOT.exists()
+# assert IBUG_ROOT.exists()
 
 
 def assert_points(pts):
     assert isinstance(pts, Tensor), type(pts)
     assert pts.ndim == 2, pts.shape
     assert pts.shape[1] == 2, pts.shape
+    return True
 
 
 def assert_img(img):
     assert isinstance(img, Tensor), type(img)
     assert img.ndim == 3, img.shape
     assert list(img.shape)[0] == 1, f"{img.shape} is not grayscale"
+    return True
 
 
 def load_asf(file: os.PathLike) -> Tensor:
@@ -72,7 +87,7 @@ def load_asf(file: os.PathLike) -> Tensor:
 
     points = torch.as_tensor(points, dtype=torch.float32)
     assert len(points) == num_pts, len(points)
-    assert points.shape == (num_pts, 2)
+    assert_points(points)
     return points
 
 
@@ -80,34 +95,35 @@ def load_nose(file: os.PathLike) -> Tensor:
     points = load_asf(file)
     NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
     nose_point = points[NOSE_INDEX].reshape(1, 2)
+    assert_points(nose_point)
     return nose_point
 
 
-def load_xml():
-    tree = ET.parse("ibug_300W_large_face_landmark_dataset/labels_ibug_300W_train.xml")
-    root = tree.getroot()
-    print(root[2])
-    root_dir = "ibug_300W_large_face_landmark_dataset"
+# def load_xml(file: xml.etree.ElementTree.Element):
+#     tree = ET.parse("ibug_300W_large_face_landmark_dataset/labels_ibug_300W_train.xml")
+#     root = tree.getroot()
+#     print(root[2])
+#     root_dir = "ibug_300W_large_face_landmark_dataset"
 
-    bboxes = []  # face bounding box used to crop the image
-    landmarks = []  # the facial keypoints/landmarks for the whole training dataset
-    img_filenames = []  # the image names for the whole dataset
+#     bboxes = []  # face bounding box used to crop the image
+#     landmarks = []  # the facial keypoints/landmarks for the whole training dataset
+#     img_filenames = []  # the image names for the whole dataset
 
-    for filename in root[2]:
-        img_filenames.append(os.path.join(root_dir, filename.attrib["file"]))
-        box = filename[0].attrib
-        # x, y for the top left corner of the box, w, h for box width and height
-        bboxes.append([box["left"], box["top"], box["width"], box["height"]])
+#     for filename in root[2]:
+#         img_filenames.append(os.path.join(root_dir, filename.attrib["file"]))
+#         box = filename[0].attrib
+#         # x, y for the top left corner of the box, w, h for box width and height
+#         bboxes.append([box["left"], box["top"], box["width"], box["height"]])
 
-        landmark = []
-        for num in range(68):
-            x_coordinate = int(filename[0][num].attrib["x"])
-            y_coordinate = int(filename[0][num].attrib["y"])
-            landmark.append([x_coordinate, y_coordinate])
-        landmarks.append(landmark)
+#         landmark = []
+#         for num in range(68):
+#             x_coordinate = int(filename[0][num].attrib["x"])
+#             y_coordinate = int(filename[0][num].attrib["y"])
+#             landmark.append([x_coordinate, y_coordinate])
+#         landmarks.append(landmark)
 
-    landmarks = np.array(landmarks).astype("float32")
-    bboxes = np.array(bboxes).astype("float32")
+#     landmarks = np.array(landmarks).astype("float32")
+#     bboxes = np.array(bboxes).astype("float32")
 
 
 def load_img(img_file: Path):
@@ -116,15 +132,15 @@ def load_img(img_file: Path):
         [
             TT.ToPILImage(),
             TT.ToTensor(),
-            # TT.Grayscale(),
+            TT.Grayscale(),
         ]
     )
     img = pipeline(t)
+    assert_img(img)
     return img
 
 
 def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
-    image = TT.Grayscale()
     h, w = image.shape[-2:]
 
     # resize
@@ -183,9 +199,10 @@ class FaceKeypointsDataset(Dataset):
     def __init__(
         self,
         idxs: Sequence[int],
+        root_dir: Path = DANES_ROOT,
         transform: Optional[Callable] = None,
     ) -> None:
-        self.root_dir = DANES_ROOT
+        self.root_dir = root_dir
         self.img_files = sorted(
             f for f in self.root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
         )
@@ -218,9 +235,10 @@ class NoseKeypointDataset(FaceKeypointsDataset):
     def __init__(
         self,
         idxs: Sequence[int],
+        root_dir: Path = DANES_ROOT,
         transform: Optional[Callable] = None,
     ) -> None:
-        super().__init__(idxs, transform)
+        super().__init__(idxs, root_dir, transform)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         # TODO add augmentations with if random.random()<THRESHOLD
@@ -236,12 +254,13 @@ class LargeDataset(Dataset):
     def __init__(
         self,
         idxs: Sequence[int],
+        root_dir: Path = IBUG_ROOT,
         transform: Optional[Callable] = None,
     ) -> None:
-        self.root_dir = IBUG_ROOT
-        self.tree = ET.parse(self.root / "labels_ibug_300W_train.xml")
-        root = tree.getroot()
-        self.files = root[2]  # should be 6666
+        self.root_dir = root_dir
+        self.tree = ET.parse(self.root_dir / "labels_ibug_300W_train.xml")
+        # root = tree.getroot()
+        self.files = self.tree.getroot()[2]  # should be 6666
         self.len = len(self.files)
 
     def __len__(self):
