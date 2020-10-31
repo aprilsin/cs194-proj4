@@ -103,11 +103,14 @@ def show_keypoints(
     # plt.figure(figsize=image.shape)
     plt.figure()
     plt.imshow(image, cmap="gray")
-    plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
-    # plt.scatter(truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x")
+    # plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
+    plt.scatter(truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x")
     if pred_points is not None:
+        # plt.scatter(
+        #     pred_points[:, 0], pred_points[:, 1], s=35, c="r", marker="x"
+        # )
         plt.scatter(
-            pred_points[:, 0], pred_points[:, 1], s=35, c="r", marker="x"
+            pred_points[:, 0] * w, pred_points[:, 1] * h, s=35, c="r", marker="x"
         )
     plt.pause(0.001)  # pause a bit so that plots are updated
     plt.show()

@@ -106,8 +106,8 @@ class FaceKeypointsDataset(Dataset):
 
         h, w = img.shape[-2:]
         points = load_asf(asf_name)
-        points[:, 0] *= w
-        points[:, 1] *= h
+        # points[:, 0] *= w
+        # points[:, 1] *= h
         # TODO is rounding necessary?
         # points=points.round()
 

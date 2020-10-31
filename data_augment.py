@@ -18,8 +18,8 @@ def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     # resize
     out_h, out_w = 240, 320
     image = TT.Resize((out_h, out_w))(image)
-    keypoints[..., 0] = keypoints[..., 0] * out_h / h
-    keypoints[..., 1] = keypoints[..., 1] * out_w / w
+    # keypoints[..., 0] = keypoints[..., 0] * out_h / h
+    # keypoints[..., 1] = keypoints[..., 1] * out_w / w
 
     return image, keypoints
 
@@ -35,7 +35,7 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     h, w = image.shape
     center = (h / 2, w / 2)
 
-    rotate_deg = np.random.randint(-15, 15)
+    rotate_deg = np.random.randint(-12, 12)
     image = ST.rotate(image, angle=rotate_deg, center=(0, 0))
     for i in range(len(keypoints)):
         point = keypoints[i]
