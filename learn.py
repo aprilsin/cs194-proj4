@@ -54,9 +54,7 @@ def test(test_loader, trained_model):
         img, keypts = img.to(device), keypts.to(device)
         pred_keypts = trained_model(img)
         # print(keypts.shape, torch.squeeze(keypts, 0).shape)
-        show_keypoints(
-            torch.squeeze(img), torch.squeeze(keypts, 0), torch.squeeze(pred_keypts)
-        )
+        show_keypoints(img, keypts, pred_keypts)
         # Compute and print loss.
         loss = loss_fn(pred_keypts, keypts)
         print(i, loss.item())

@@ -28,20 +28,44 @@ def to_display_img(img: ToDisplayImage) -> np.ndarray:
         return img
 
     assert isinstance(img, Tensor), type(img)
+
     if img.ndim == 2:
         return img.numpy()
-    if img.ndim == 3 or img.ndim == 4:
-        # change channels-first to channels-last format
-        # img = img.permute(1, 2, 0)
 
+    if img.ndim == 3 or img.ndim == 4:
         # remove dimension of size 1 for plt
         img = torch.squeeze(img)
+        img = torch.detach(img).numpy()
         return img
 
-    # if img.ndim == 4: # we have a batch
-    #     if img.shape[0] == 1:
-    #         img
-    #         return img
+    else:
+        raise ValueError()
+
+
+def assert_points(pts):
+    assert pts.ndim == 2, pts.shape
+    assert pts.shape[1] == 2, pts.shape
+
+
+ToDisplayPoints = Union[Tensor, np.ndarray]
+
+
+def to_display_pts(pts: ToDisplayPoints) -> np.ndarray:
+    print(pts.shape)
+    if pts.ndim == 2 and pts.shape[1] == 2 and isinstance(pts, np.ndarray):
+        return pts
+
+    assert isinstance(pts, Tensor), type(pts)
+
+    if pts.ndim == 2 and pts.shape[1] == 2:
+        return pts.numpy()
+
+    if pts.ndim == 3:
+        # remove dimension of size 1 for plt
+        pts = torch.squeeze(pts, 0)
+        pts = torch.detach(pts).numpy()
+        return pts
+
     else:
         raise ValueError()
 
@@ -53,11 +77,13 @@ def show_keypoints(
 ) -> None:
     """Show image with keypoints"""
     image = to_display_img(image)
+    truth_points = to_display_pts(truth_points)
+    pred_points = to_display_pts(pred_points)
     # check inputs have the correct shape
     assert image.ndim == 2, image.shape
-    assert truth_points.ndim == 2 and truth_point.shape[1] == 2, truth_points.shape
+    assert truth_points.ndim == 2 and truth_points.shape[1] == 2, truth_points.shape
     if pred_points is not None:
-        assert pred_points.ndim == 2 and pred_point.shape[1] == 2, pred_points.shape
+        assert pred_points.ndim == 2 and pred_points.shape[1] == 2, pred_points.shape
 
     # show image and plot keypoints
     plt.figure()
