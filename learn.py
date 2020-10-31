@@ -40,14 +40,14 @@ def train(train_loader, model, learning_rate):
 
 
 # do testing
-def test(test_loader, trained_model, show_every=1):
+def test(test_loader, trained_model, show_every=1, save=False):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     loss_fn = F.mse_loss
     loss_per_batch = []
-    results = []
+    imgs, keypts, pred_pts = [], [], []
     for i, (batched_imgs, batched_keypts) in tenumerate(test_loader):
-
+        
         # use GPU if available
         batched_imgs = batched_imgs.to(device)
         batched_keypts = batched_keypts.to(device)
@@ -57,12 +57,17 @@ def test(test_loader, trained_model, show_every=1):
 
         # compute and print loss.
         loss = loss_fn(pred_keypts, batched_keypts)
-        # print(i, loss.item())
+        print(f"batch{i}", loss.item())
 
         if i % show_every == 0:
-            show_keypoints(batched_imgs[0], batched_keypts[0], pred_keypts[0])
+            chosen = [1, 7, 15]
+            for i in chosen:
+                show_keypoints(batched_imgs[i], batched_keypts[i], pred_keypts[i])
 
         loss_per_batch.append(loss.item())
-        # results.append((batched_imgs, batched_keypts, pred_keypts))
-
+        
+        # if save:
+        #     results.extend((batched_imgs, batched_keypts, pred_keypts))
+        
+    results = [imgs, keypts, pred_pts]
     return results, sum(loss_per_batch) / len(loss_per_batch)  # return the average loss

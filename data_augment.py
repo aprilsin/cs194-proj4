@@ -27,7 +27,8 @@ def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
 def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     # print(image.shape, keypoints.shape)
 
-    # jitter = TT.ColorJitter(brightness=0.3)
+    # TODO make dataloader for colors for this to work
+    # jitter = TT.ColorJitter(brightness=0.3, saturation=0.2)
     # image = jitter(image)
 
     # convert tensors to numpy arrays to use skimage

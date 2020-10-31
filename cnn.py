@@ -12,14 +12,15 @@ class NoseFinder(Module):
 
         # formula: (N - F) / stride + 1
         self.C1 = Conv2d(1, 24, 3) # Conv2d(1, 15, 3)
-        self.C2 = Conv2d(24, 24, 3) # Conv2d(15, 28, 3)
-        self.C3 = Conv2d(24, 20, 3) # Conv2d(28, 20, 3)
+        self.C2 = Conv2d(24, 30, 3) # Conv2d(15, 28, 3)
+        self.C3 = Conv2d(30, 20, 3) # Conv2d(28, 20, 3)
+        # self.C4 = Conv2d(30, 20, 3)
 
         self.FC1 = Linear(20 * 7 * 10, 128)
         self.FC2 = Linear(128, 2 * 1)
 
     def forward(self, img):
-        # print(img.shape)
+        # print("input: ", img.shape)
 
         r = ReLU()
         mp3 = MaxPool2d(3)
@@ -43,6 +44,12 @@ class NoseFinder(Module):
         x = r(x)
         x = mp3(x)
         # print("m3: ", x.shape)
+
+        # x = self.C4(x)
+        # # print("C4: ", x.shape)
+        # x = r(x)
+        # x = mp3(x)
+        # print("m4: ", x.shape)
 
         x = Flatten()(x)
 
@@ -73,11 +80,11 @@ class FaceFinder(Module):
         self.C4 = Conv2d(30, 30, 3)
         self.C5 = Conv2d(30, 25, 3)
 
-        self.FC1 = Linear(25 * 7 * 10, 128)
+        self.FC1 = Linear(25 * 47 * 65, 128)
         self.FC2 = Linear(128, 2 * 58)
 
     def forward(self, img):
-        # print(img.shape)
+        print("img:", img.shape)
 
         r = ReLU()
         mp3 = MaxPool2d(3)
@@ -93,7 +100,7 @@ class FaceFinder(Module):
         x = self.C2(x)
         # print("C2: ", x.shape)
         x = r(x)
-        x = mp3(x)
+        # x = mp3(x)
         # print("m2: ", x.shape)
 
         x = self.C3(x)
@@ -105,25 +112,22 @@ class FaceFinder(Module):
         x = self.C4(x)
         # print("C4: ", x.shape)
         x = r(x)
-        x = mp3(x)
+        # x = mp3(x)
         # print("m4: ", x.shape)
 
         x = self.C5(x)
         # print("C5: ", x.shape)
         x = r(x)
-        x = mp3(x)
-        print("m5: ", x.shape)
+        # x = mp3(x)
+        # print("m5: ", x.shape)
 
         x = Flatten()(x)
 
         x = self.FC1(x)
         # print("FC1: ", x.shape)
-
         x = r(x)
-        # print(x.shape)
 
         x = self.FC2(x)
-        # x=torch.sigmoid(x)
         x = x.reshape(-1, 58, 2)
         # print("FC2: ", x.shape)
 
