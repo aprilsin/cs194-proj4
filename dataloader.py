@@ -46,6 +46,8 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import utils
 
+import data_augment
+
 
 def load_asf(file: os.PathLike) -> Tensor:
     file = Path(file)
@@ -94,7 +96,7 @@ class FaceKeypointsDataset(Dataset):
         self,
         idxs: Sequence[int],
         root_dir: Path,
-        transform: Optional[Callable] = None,
+        transform: bool = False,
     ) -> None:
         self.root_dir = root_dir
         self.img_files = sorted(
@@ -105,6 +107,10 @@ class FaceKeypointsDataset(Dataset):
         )
         self.len = len(self.img_files)
         self.transform = transform
+
+    def augment(self, img, points):
+        img, points = data_augment.Rescale(240, 320)(img, points)
+        return img, points
 
     def __len__(self) -> int:
         return self.len
@@ -123,10 +129,8 @@ class FaceKeypointsDataset(Dataset):
         # TODO is rounding necessary?
         # points=points.round()
 
-        if self.transform is not None:
-            print("before:", points[52])
-            img, points = self.transform(img, points)
-            print("after:", points[52])
+        if self.transform:
+            img, points = self.augment(img, points)
 
         assert isinstance(img, Tensor), type(img)
         assert isinstance(points, Tensor), type(points)

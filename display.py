@@ -98,6 +98,7 @@ def show_keypoints(
     # print(truth_points[:, 0] * h, truth_points[:, 1] * w)
     # print(truth_points[:, 0] * w, truth_points[:, 1] * h)
     plt.imshow(image, cmap="gray")
+    # plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
     plt.scatter(truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x")
     if pred_points is not None:
         plt.scatter(
@@ -106,3 +107,9 @@ def show_keypoints(
 
     plt.pause(0.001)  # pause a bit so that plots are updated
     plt.show()
+
+def show_training_progress():
+    pass
+
+def show_epoch():
+    pass
