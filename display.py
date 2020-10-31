@@ -11,12 +11,17 @@ def valid_keypoints(image, keypoints):
     rows = keypoints[:, 0]
     cols = keypoints[:, 1]
 
+    # make sure that the keypoints are indices and not ratios
+    assert rows.max() >= 1 and cols.max() >= 1, f"{rows.max()}, {cols.max()}"
+
+    # make sure that the keypoints are in bounds
     assert (0 <= rows).all() and (
         rows < h
     ).all(), f"{rows.min() = }, {rows.max() = } out of bounds for {image.shape = }"
     assert (0 <= cols).all() and (
         cols < h
     ).all(), f"{cols.min() = }, {cols.max() = } out of bounds for {image.shape = }"
+
     return True
 
 
@@ -112,5 +117,8 @@ def show_training_progress():
     pass
 
 
-def show_epoch():
-    pass
+def print_epoch(ep, train_loss, valid_loss) -> None:
+    print()
+    print(f"========== Epoch {ep} ==========")
+    print(f"{train_loss = }")
+    print(f"{valid_loss = }")

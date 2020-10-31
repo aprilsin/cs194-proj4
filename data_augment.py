@@ -8,64 +8,21 @@ import torch
 import torchvision.transforms as TT
 
 
+def part1_transform(image, keypoints):
+    h, w = image.shape[-2:]
 
-class Rescale(object):
-    """Rescale the image in a sample to a given size.
+    # resize
+    out_h, out_w = 240, 320
+    image = TT.Resize((out_h, out_w))(image)
+    keypoints[..., 0] = keypoints[..., 0] * out_h / h
+    keypoints[..., 1] = keypoints[..., 1] * out_w / w
 
-    Args:
-        output_size (tuple or int): Desired output size. If tuple, output is
-            matched to output_size. If int, smaller of image edges is matched
-            to output_size keeping aspect ratio the same.
-    """
-
-    def __init__(self, out_h, out_w):
-        assert isinstance(out_h, int)
-        assert isinstance(out_w, int)
-        self.out_h = out_h
-        self.out_w = out_w
-
-    def __call__(self, image, keypoints):
-        assert isinstance(image, Tensor), type(image)
-        assert isinstance(keypoints, Tensor), type(keypoints)
-
-        h, w = image.shape[-2:]
-        image = TT.Resize((self.out_h, self.out_w))(image)
-        keypoints[..., 0] = keypoints[..., 0] * self.out_h / h
-        keypoints[..., 1] = keypoints[..., 1] * self.out_w / w
-
-        image = torch.as_tensor(image)
-        # keypoints = torch.as_tensor(keypoints)
-        assert isinstance(image, Tensor), type(image)
-        assert isinstance(keypoints, Tensor), type(keypoints)
-        return image, keypoints
+    return image, keypoints
 
 
-class RandomCrop(object):
-    """Crop randomly the image in a sample.
+def part2_augment(image, keypoitns):
 
-    Args:
-        output_size (tuple or int): Desired output size. If int, square crop
-            is made.
-    """
+    rotate = TT.RandomRotation((-15, 15))
+    image = rotate(image)
+    keypoints = rotate(keypoints)
 
-    def __init__(self, output_size):
-        assert isinstance(output_size, (int, tuple))
-        if isinstance(output_size, int):
-            self.output_size = (output_size, output_size)
-        else:
-            assert len(output_size) == 2
-            self.output_size = output_size
-
-    def __call__(self, image, landmarks):
-
-        h, w = image.shape[2:]
-        new_h, new_w = self.output_size
-
-        top = np.random.randint(0, h - new_h)
-        left = np.random.randint(0, w - new_w)
-
-        image = image[top : top + new_h, left : left + new_w]
-
-        landmarks = landmarks - [left, top]
-
-        return image, landmarks

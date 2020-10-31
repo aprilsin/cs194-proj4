@@ -94,10 +94,6 @@ class FaceKeypointsDataset(Dataset):
         self.len = len(self.img_files)
         self.transform = transform
 
-    def augment(self, img, points):
-        img, points = data_augment.Rescale(240, 320)(img, points)
-        return img, points
-
     def __len__(self) -> int:
         return self.len
 
