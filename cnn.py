@@ -84,7 +84,7 @@ class FaceFinder(Module):
         self.FC2 = Linear(128, 2 * 58)
 
     def forward(self, img):
-        print("img:", img.shape)
+        # print("img:", img.shape)
 
         r = ReLU()
         mp3 = MaxPool2d(3)
