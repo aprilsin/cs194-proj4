@@ -11,9 +11,9 @@ class NoseFinder(Module):
         super().__init__()
 
         # formula: (N - F) / stride + 1
-        self.C1 = Conv2d(1, 15, 3)
-        self.C2 = Conv2d(15, 28, 3)
-        self.C3 = Conv2d(28, 20, 3)
+        self.C1 = Conv2d(1, 24, 3) # Conv2d(1, 15, 3)
+        self.C2 = Conv2d(24, 24, 3) # Conv2d(15, 28, 3)
+        self.C3 = Conv2d(24, 20, 3) # Conv2d(28, 20, 3)
 
         self.FC1 = Linear(20 * 7 * 10, 128)
         self.FC2 = Linear(128, 2 * 1)

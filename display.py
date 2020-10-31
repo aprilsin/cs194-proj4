@@ -122,3 +122,6 @@ def print_epoch(ep, train_loss, valid_loss) -> None:
     print(f"========== Epoch {ep} ==========")
     print(f"{train_loss = }")
     print(f"{valid_loss = }")
+
+def show_sucess(ep, results):
+    for (img, true_pts, pred_pts) in results:
