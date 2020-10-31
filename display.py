@@ -51,12 +51,6 @@ def to_display_img(img: ToDisplayImage, color=False) -> np.ndarray:
     else:
         raise ValueError(type(img), img.shape)
 
-
-def assert_points(pts):
-    assert pts.ndim == 2, pts.shape
-    assert pts.shape[1] == 2, pts.shape
-
-
 ToDisplayPoints = Union[Tensor, np.ndarray]
 
 

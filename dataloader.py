@@ -35,6 +35,20 @@ from torchvision import utils
 
 import data_augment
 
+DANES_ROOT = Path("imm_faces_db")
+IBUG_ROOD = Path("ibug_300W_large_face_landmark_dataset")
+assert DANES_ROOT.exists()
+assert IBUD_ROOT.exists()
+
+def assert_points(pts):
+    assert isinstance(points, Tensor), type(points)
+    assert pts.ndim == 2, pts.shape
+    assert pts.shape[1] == 2, pts.shape
+
+def assert_img(img):
+    assert isinstance(img, Tensor), type(img)
+    assert img.ndim == 3, img.shape
+    assert list(img.shape)[0] == 1, f"{img.shape} is not grayscale"
 
 def load_asf(file: os.PathLike) -> Tensor:
     file = Path(file)
@@ -64,13 +78,44 @@ def load_asf(file: os.PathLike) -> Tensor:
 #     return nose_point
 
 
+import xml.etree.ElementTree as ET 
+import numpy as np
+import os 
+import pandas as pd
+def load_xml():
+    tree = ET.parse('ibug_300W_large_face_landmark_dataset/labels_ibug_300W_train.xml')
+    root = tree.getroot()
+    print(root[2])
+    root_dir = 'ibug_300W_large_face_landmark_dataset'
+
+    bboxes = [] # face bounding box used to crop the image
+    landmarks = [] # the facial keypoints/landmarks for the whole training dataset
+    img_filenames = [] # the image names for the whole dataset
+
+    for filename in root[2]:
+        img_filenames.append(os.path.join(root_dir, filename.attrib['file']))
+        box = filename[0].attrib
+        # x, y for the top left corner of the box, w, h for box width and height
+        bboxes.append([box['left'], box['top'], box['width'], box['height']]) 
+
+        landmark = []
+        for num in range(68):
+            x_coordinate = int(filename[0][num].attrib['x'])
+            y_coordinate = int(filename[0][num].attrib['y'])
+            landmark.append([x_coordinate, y_coordinate])
+        landmarks.append(landmark)
+
+    landmarks = np.array(landmarks).astype('float32')     
+    bboxes = np.array(bboxes).astype('float32') 
+
+
 def load_img(img_file: Path):
     t = torchvision.io.read_image(str(img_file))
     pipeline = TT.Compose(
         [
             TT.ToPILImage(),
             TT.ToTensor(),
-            TT.Grayscale(),
+            # TT.Grayscale(),
         ]
     )
     img = pipeline(t)
@@ -81,10 +126,9 @@ class FaceKeypointsDataset(Dataset):
     def __init__(
         self,
         idxs: Sequence[int],
-        root_dir: Path,
         transform: Optional[Callable] = None,
     ) -> None:
-        self.root_dir = root_dir
+        self.root_dir = DANES_ROOT
         self.img_files = sorted(
             f for f in self.root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
         )
@@ -103,15 +147,13 @@ class FaceKeypointsDataset(Dataset):
         img_name, asf_name = self.img_files[idx], self.asf_files[idx]
 
         img = load_img(img_name)
-        print(img.shape)
-        h, w = img.shape[-2:]
         points = load_asf(asf_name)
 
         if self.transform is not None:
             img, points = self.transform(img, points)
 
-        assert isinstance(img, Tensor), type(img)
-        assert isinstance(points, Tensor), type(points)
+        assert_img(img)
+        assert_points(points)
         return img, points
 
 
@@ -119,10 +161,9 @@ class NoseKeypointDataset(FaceKeypointsDataset):
     def __init__(
         self,
         idxs: Sequence[int],
-        root_dir: Path,
         transform: Optional[Callable] = None,
     ) -> None:
-        super().__init__(idxs, root_dir, transform)
+        super().__init__(idxs, transform)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         # TODO add augmentations with if random.random()<THRESHOLD
@@ -138,19 +179,40 @@ class LargeDataset(Dataset):
     def __init__(
         self,
         idxs: Sequence[int],
-        root_dir: Path,
         transform: Optional[Callable] = None,
     ) -> None:
-        super().__init__(idxs, root_dir, transform)
-
+        self.root_dir = IBUG_ROOT
+        self.tree = ET.parse(self.root/"labels_ibug_300W_train.xml")
+        root = tree.getroot()
+        self.files = root[2] # should be 6666
+        self.len = len(self.files)
+    def __len__(self):
+        return self.len # should be 6666
+    
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         # TODO add augmentations with if random.random()<THRESHOLD
+        assert idx in np.arange(self.len)
+        
+        filename = self.files[idx]
 
-        img, points = super().__getitem__(idx)
+        img_name = self.root_dir / filename.attrib['file']
+        img = load_img(img_name)
 
-        NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
-        nose_point = points[NOSE_INDEX].reshape(1, 2)
-        return img, nose_point
+        keypts = []
+        for num in range(68):
+            x_coordinate = int(filename[0][num].attrib['x'])
+            y_coordinate = int(filename[0][num].attrib['y'])
+            keypts.append([x_coordinate, y_coordinate])
+        keypts.append(keypts)
+        keypts = torch.as_tensor(points, dtype=torch.float32)
+
+        box = filename[0].attrib
+        # x, y for the top left corner of the box, w, h for box width and height
+        corners = [box['left'], box['top'], box['width'], box['height']]
+
+        # crop image background
+        
+        return img, keypts
 
 
 if __name__ == "__main__":
