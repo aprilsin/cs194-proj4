@@ -68,8 +68,8 @@ class Rescale(object):
 
         h, w = image.shape[-2:]
         image = TT.Resize((self.out_h, self.out_w))(image)
-        # keypoints[..., 0] = keypoints[..., 0] * self.out_h / h
-        # keypoints[..., 1] = keypoints[..., 1] * self.out_w / w
+        keypoints[..., 0] = keypoints[..., 0] * self.out_h / h
+        keypoints[..., 1] = keypoints[..., 1] * self.out_w / w
 
         image = torch.as_tensor(image)
         # keypoints = torch.as_tensor(keypoints)

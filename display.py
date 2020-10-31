@@ -98,8 +98,8 @@ def show_keypoints(
     # print(truth_points[:, 0] * h, truth_points[:, 1] * w)
     # print(truth_points[:, 0] * w, truth_points[:, 1] * h)
     plt.imshow(image, cmap="gray")
-    # plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
-    plt.scatter(truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x")
+    plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
+    # plt.scatter(truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x")
     if pred_points is not None:
         plt.scatter(
             pred_points[:, 0] * h, pred_points[:, 1] * w, s=35, c="r", marker="x"
