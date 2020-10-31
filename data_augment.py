@@ -8,7 +8,7 @@ import torch
 import torchvision.transforms as TT
 
 
-def part1_transform(image, keypoints):
+def part1_augment(image, keypoints):
     h, w = image.shape[-2:]
 
     # resize
@@ -26,3 +26,4 @@ def part2_augment(image, keypoitns):
     image = rotate(image)
     keypoints = rotate(keypoints)
 
+    return image, keypoints

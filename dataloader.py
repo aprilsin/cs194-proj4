@@ -57,11 +57,11 @@ def load_asf(file: os.PathLike) -> Tensor:
     return points
 
 
-def load_nose(file: os.PathLike) -> Tensor:
-    points = load_asf(file)
-    NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
-    nose_point = points[NOSE_INDEX].reshape(1, 2)
-    return nose_point
+# def load_nose(file: os.PathLike) -> Tensor:
+#     points = load_asf(file)
+#     NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
+#     nose_point = points[NOSE_INDEX].reshape(1, 2)
+#     return nose_point
 
 
 def load_img(img_file: Path):

@@ -57,11 +57,12 @@ def test(test_loader, trained_model, show_every=1):
 
         # compute and print loss.
         loss = loss_fn(pred_keypts, batched_keypts)
+        # print(i, loss.item())
 
         if i % show_every == 0:
             show_keypoints(batched_imgs[0], batched_keypts[0], pred_keypts[0])
-            io.imshow(batched_imgs[0])
-            # print(i, loss.item())
+            print(batched_keypts[0])
+            print(pred_keypts[0])
 
         loss_per_batch.append(loss.item())
         results.append((batched_imgs, batched_keypts, pred_keypts))

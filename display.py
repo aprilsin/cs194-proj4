@@ -100,6 +100,7 @@ def show_keypoints(
     # print(f"{image.shape = }")
 
     # show image and plot keypoints
+    # plt.figure(figsize=image.shape)
     plt.figure()
     plt.imshow(image, cmap="gray")
     plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
@@ -108,7 +109,6 @@ def show_keypoints(
         plt.scatter(
             pred_points[:, 0] * h, pred_points[:, 1] * w, s=35, c="r", marker="x"
         )
-
     plt.pause(0.001)  # pause a bit so that plots are updated
     plt.show()
 
