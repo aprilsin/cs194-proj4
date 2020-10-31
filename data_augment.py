@@ -1,50 +1,12 @@
-import argparse
-import functools
-import itertools
-import logging
-import os
-import random
-import re
-import shutil
-import subprocess
-import sys
 import typing
-from copy import deepcopy
-from functools import reduce
-from logging import debug, info, log
 from pathlib import Path
-from typing import (
-    Callable,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    NamedTuple,
-    NewType,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
+                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
 
 import numpy as np
 import torch
-import torch.nn.functional as F
-import torchvision
-import torchvision.io as TIO
 import torchvision.transforms as TT
-import torchvision.transforms.functional as TF
 
-# import skimage as sk
-from skimage import io
-from skimage.util import img_as_float
-from torch import Tensor, distributions, nn, tensor
-from torch.nn import Linear, ReLU, Sequential, Softmax
-from torch.optim import Adam
-from torch.utils.data import DataLoader, Dataset, TensorDataset
-from torchvision import utils
 
 
 class Rescale(object):
