@@ -28,7 +28,7 @@ def valid_keypoints(image, keypoints):
 ToDisplayImage = Union[Tensor, np.ndarray]
 
 
-def to_display_img(img: ToDisplayImage) -> np.ndarray:
+def to_display_img(img: ToDisplayImage, color=False) -> np.ndarray:
     if img.ndim == 2 and isinstance(img, np.ndarray):
         return img
 
@@ -37,14 +37,19 @@ def to_display_img(img: ToDisplayImage) -> np.ndarray:
     if img.ndim == 2:
         return img.numpy()
 
-    if img.ndim == 3 or img.ndim == 4:
-        # remove dimension of size 1 for plt
-        img = torch.squeeze(img)
-        img = torch.detach(img).numpy()
+    if img.ndim == 3:
+
+        # change channels first to channels last format
+        img = img.permute(1, 2, 0)
+
+        if not color:
+            # remove dimension of size 1 for plt
+            img = torch.squeeze(img)
+            img = torch.detach(img).numpy()
         return img
 
     else:
-        raise ValueError()
+        raise ValueError(type(img), img.shape)
 
 
 def assert_points(pts):
@@ -80,35 +85,29 @@ def show_keypoints(
     image: ToDisplayImage,
     truth_points: Union[Tensor, np.ndarray],
     pred_points: Union[Tensor, np.ndarray] = None,
+    color:bool= False
 ) -> None:
     """Show image with keypoints"""
 
-    # make everything numpy arrays
+    # make everything numpy arrays with correct shape
     image = to_display_img(image)
-    assert image.ndim == 2, image.shape
+    assert image.ndim == 2 or image.ndim == 3, image.shape
 
     truth_points = to_display_pts(truth_points)
     assert truth_points.ndim == 2 and truth_points.shape[1] == 2, truth_points.shape
-    # assert valid_keypoints(image, truth_points)
 
     if pred_points is not None:
         pred_points = to_display_pts(pred_points)
         assert pred_points.ndim == 2 and pred_points.shape[1] == 2, pred_points.shape
-        # assert valid_keypoints(image, pred_points)
 
-    h, w = image.shape
-    # print(f"{image.shape = }")
+    h, w = image.shape[0], image.shape[1]
 
     # show image and plot keypoints
-    # plt.figure(figsize=image.shape)
     plt.figure()
-    plt.imshow(image, cmap="gray")
-    # plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
+    cmap = "viridis" if color else "gray"
+    plt.imshow(image, cmap)
     plt.scatter(truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x")
     if pred_points is not None:
-        # plt.scatter(
-        #     pred_points[:, 0], pred_points[:, 1], s=35, c="r", marker="x"
-        # )
         plt.scatter(
             pred_points[:, 0] * w, pred_points[:, 1] * h, s=35, c="r", marker="x"
         )
