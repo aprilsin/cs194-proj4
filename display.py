@@ -89,12 +89,12 @@ def show_keypoints(
 
     truth_points = to_display_pts(truth_points)
     assert truth_points.ndim == 2 and truth_points.shape[1] == 2, truth_points.shape
-    assert valid_keypoints(image, truth_points)
+    # assert valid_keypoints(image, truth_points)
 
     if pred_points is not None:
         pred_points = to_display_pts(pred_points)
         assert pred_points.ndim == 2 and pred_points.shape[1] == 2, pred_points.shape
-        assert valid_keypoints(image, pred_points)
+        # assert valid_keypoints(image, pred_points)
 
     h, w = image.shape
     # print(f"{image.shape = }")
