@@ -11,11 +11,7 @@ import sys
 import typing
 from copy import deepcopy
 from functools import reduce
-from logging import (
-    debug,
-    info,
-    log,
-)
+from logging import debug, info, log
 from pathlib import Path
 from typing import (
     Callable,
@@ -40,29 +36,13 @@ import torchvision
 import torchvision.io as TIO
 import torchvision.transforms as TT
 import torchvision.transforms.functional as TF
-from skimage import (
-    io,
-    transform,
-)
+# import skimage as sk
+from skimage import io
 from skimage.util import img_as_float
-from torch import (
-    Tensor,
-    distributions,
-    nn,
-    tensor,
-)
-from torch.nn import (
-    Linear,
-    ReLU,
-    Sequential,
-    Softmax,
-)
+from torch import Tensor, distributions, nn, tensor
+from torch.nn import Linear, ReLU, Sequential, Softmax
 from torch.optim import Adam
-from torch.utils.data import (
-    DataLoader,
-    Dataset,
-    TensorDataset,
-)
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import utils
 
 
@@ -75,30 +55,32 @@ class Rescale(object):
             to output_size keeping aspect ratio the same.
     """
 
-    def __init__(self, output_size):
-        assert isinstance(output_size, (int, tuple))
-        self.output_size = output_size
+    def __init__(self, out_w, out_h):
+        assert isinstance(out_h, int)
+        assert isinstance(out_w, int)
+        self.out_h = out_h
+        self.out_w = out_w
 
-    def __call__(self, image, landmarks):
+    def __call__(self, image, keypoints):
+        assert isinstance(image, Tensor), type(image)
+        assert isinstance(keypoints, Tensor), type(keypoints)
 
-        h, w = image.shape[2:]
-        if isinstance(self.output_size, int):
-            if h > w:
-                new_h, new_w = self.output_size * h / w, self.output_size
-            else:
-                new_h, new_w = self.output_size, self.output_size * w / h
-        else:
-            new_h, new_w = self.output_size
-
-        new_h, new_w = int(new_h), int(new_w)
-
-        image = transform.resize(image, (new_h, new_w))
+        h, w = image.shape[-2:]
+        image = TT.Resize((self.out_h, self.out_w))(image)
 
         # h and w are swapped for landmarks because for images,
         # x and y axes are axis 1 and 0 respectively
-        landmarks = landmarks * [new_w / w, new_h / h]
+        # print(landmarks)
 
-        return image, landmarks
+        # landmarks = landmarks * [new_w / w, new_h / h]
+        keypoints[..., 0] = keypoints[..., 0] * self.out_w / w
+        keypoints[..., 1] = keypoints[..., 1] * self.out_h / h
+
+        image = torch.as_tensor(image)
+        # keypoints = torch.as_tensor(keypoints)
+        assert isinstance(image, Tensor), type(image)
+        assert isinstance(keypoints, Tensor), type(keypoints)
+        return image, keypoints
 
 
 class RandomCrop(object):

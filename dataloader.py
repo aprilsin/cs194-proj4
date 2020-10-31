@@ -13,11 +13,7 @@ import sys
 import typing
 from copy import deepcopy
 from functools import reduce
-from logging import (
-    debug,
-    info,
-    log,
-)
+from logging import debug, info, log
 from pathlib import Path
 from typing import (
     Callable,
@@ -42,42 +38,13 @@ import torchvision
 import torchvision.io as TIO
 import torchvision.transforms as TT
 import torchvision.transforms.functional as TF
-from skimage import (
-    io,
-    transform,
-)
+from skimage import io, transform
 from skimage.util import img_as_float
-from torch import (
-    Tensor,
-    distributions,
-    nn,
-    tensor,
-)
-from torch.nn import (
-    Linear,
-    ReLU,
-    Sequential,
-    Softmax,
-)
+from torch import Tensor, distributions, nn, tensor
+from torch.nn import Linear, ReLU, Sequential, Softmax
 from torch.optim import Adam
-from torch.utils.data import (
-    DataLoader,
-    Dataset,
-    TensorDataset,
-)
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import utils
-
-
-ROOT_DIR = Path("imm_face_db")
-
-
-# def get_gender(person_idx: int) -> str:
-#     """For filename handling."""
-#     assert 1 <= person_idx <= 40, person_idx
-
-#     female_idx = [8, 12, 14, 15, 22, 30, 35]
-
-#     return "f" if person_idx in female_idx else "m"
 
 
 def load_asf(file: os.PathLike) -> Tensor:
@@ -126,7 +93,7 @@ class FaceKeypointsDataset(Dataset):
     def __init__(
         self,
         idxs: Sequence[int],
-        root_dir: Path = ROOT_DIR,
+        root_dir: Path,
         transform: Optional[Callable] = None,
     ) -> None:
         self.root_dir = root_dir
@@ -153,9 +120,12 @@ class FaceKeypointsDataset(Dataset):
         points[:, 1] *= h
         # TODO is rounding necessary?
         # points=points.round()
-        if self.transform:
+
+        if self.transform is not None:
             img, points = self.transform(img, points)
 
+        assert isinstance(img, Tensor), type(img)
+        assert isinstance(points, Tensor), type(points)
         return img, points
 
 

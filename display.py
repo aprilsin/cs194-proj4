@@ -51,7 +51,6 @@ ToDisplayPoints = Union[Tensor, np.ndarray]
 
 
 def to_display_pts(pts: ToDisplayPoints) -> np.ndarray:
-    print(pts.shape)
     if pts.ndim == 2 and pts.shape[1] == 2 and isinstance(pts, np.ndarray):
         return pts
 
@@ -76,25 +75,26 @@ def show_keypoints(
     pred_points: Union[Tensor, np.ndarray] = None,
 ) -> None:
     """Show image with keypoints"""
+
+    # make everything numpy arrays
     image = to_display_img(image)
-    truth_points = to_display_pts(truth_points)
-    pred_points = to_display_pts(pred_points)
-    # check inputs have the correct shape
     assert image.ndim == 2, image.shape
+
+    truth_points = to_display_pts(truth_points)
     assert truth_points.ndim == 2 and truth_points.shape[1] == 2, truth_points.shape
+    assert valid_keypoints(image, truth_points)
+
     if pred_points is not None:
+        pred_points = to_display_pts(pred_points)
         assert pred_points.ndim == 2 and pred_points.shape[1] == 2, pred_points.shape
+        assert valid_keypoints(image, pred_points)
 
     # show image and plot keypoints
     plt.figure()
 
     plt.imshow(image, cmap="gray")
-
-    assert valid_keypoints(image, truth_points)
     plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
-
     if pred_points is not None:
-        assert valid_keypoints(image, pred_points)
         plt.scatter(pred_points[:, 0], pred_points[:, 1], s=35, c="r", marker="x")
 
     plt.pause(0.001)  # pause a bit so that plots are updated

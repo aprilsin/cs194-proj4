@@ -1,8 +1,8 @@
 import os
 import pickle
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence, Union
-from dataclasses import dataclass
 
 import numpy as np
 import skimage.io as io

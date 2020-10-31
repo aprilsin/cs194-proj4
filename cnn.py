@@ -2,21 +2,15 @@
 
 import torch
 import torch.nn.functional as F
-from torch.nn import (
-    Conv2d,
-    Flatten,
-    Linear,
-    MaxPool2d,
-    Module,
-    ReLU,
-    Sequential,
-    Identity,
-)
+from torch.nn import (Conv2d, Flatten, Identity, Linear, MaxPool2d, Module,
+                      ReLU, Sequential)
 
 
 class NoseFinder(Module):
     def __init__(self):
         super().__init__()
+
+        # unused variable, only for reference
         self.model = Sequential(
             # layer 1
             Conv2d(1, 15, 5),  # 56,76,
@@ -50,6 +44,7 @@ class NoseFinder(Module):
     def forward(self, img):
 
         r = ReLU()
+        print(img.shape)
         mp3 = MaxPool2d(3)
         mp5 = MaxPool2d(5)
         mp7 = MaxPool2d(7)

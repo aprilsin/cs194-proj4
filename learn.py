@@ -1,20 +1,12 @@
-from torch.nn import MSELoss
+import torch
 import torch.nn.functional as F
+import torch.nn.functional as F
+from torch.nn import (Conv2d, Flatten, Identity, Linear, MaxPool2d, Module,
+                      MSELoss, ReLU, Sequential)
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm.contrib import tenumerate
-import torch
-import torch.nn.functional as F
-from torch.nn import (
-    Conv2d,
-    Flatten,
-    Linear,
-    MaxPool2d,
-    Module,
-    ReLU,
-    Sequential,
-    Identity,
-)
+
 from display import show_keypoints
 
 
@@ -53,8 +45,8 @@ def test(test_loader, trained_model):
     for i, (img, keypts) in tenumerate(test_loader):
         img, keypts = img.to(device), keypts.to(device)
         pred_keypts = trained_model(img)
-        # print(keypts.shape, torch.squeeze(keypts, 0).shape)
         show_keypoints(img, keypts, pred_keypts)
+        
         # Compute and print loss.
         loss = loss_fn(pred_keypts, keypts)
         print(i, loss.item())
