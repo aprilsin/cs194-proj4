@@ -1,0 +1,5 @@
+%%capture
+if not os.path.exists('/content/ibug_300W_large_face_landmark_dataset'):
+    !wget https://people.eecs.berkeley.edu/~zhecao/ibug_300W_large_face_landmark_dataset.zip
+    !unzip 'ibug_300W_large_face_landmark_dataset.zip'    
+    !rm -r 'ibug_300W_large_face_landmark_dataset.zip'
