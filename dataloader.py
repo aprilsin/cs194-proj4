@@ -103,13 +103,9 @@ class FaceKeypointsDataset(Dataset):
         img_name, asf_name = self.img_files[idx], self.asf_files[idx]
 
         img = load_img(img_name)
-
+        print(img.shape)
         h, w = img.shape[-2:]
         points = load_asf(asf_name)
-        # points[:, 0] *= w
-        # points[:, 1] *= h
-        # TODO is rounding necessary?
-        # points=points.round()
 
         if self.transform is not None:
             img, points = self.transform(img, points)
@@ -120,6 +116,25 @@ class FaceKeypointsDataset(Dataset):
 
 
 class NoseKeypointDataset(FaceKeypointsDataset):
+    def __init__(
+        self,
+        idxs: Sequence[int],
+        root_dir: Path,
+        transform: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(idxs, root_dir, transform)
+
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        # TODO add augmentations with if random.random()<THRESHOLD
+
+        img, points = super().__getitem__(idx)
+
+        NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
+        nose_point = points[NOSE_INDEX].reshape(1, 2)
+        return img, nose_point
+
+
+class LargeDataset(Dataset):
     def __init__(
         self,
         idxs: Sequence[int],

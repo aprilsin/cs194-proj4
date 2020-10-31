@@ -71,4 +71,3 @@ def test(test_loader, trained_model, show_every=1, save=False):
 
     results = [imgs, keypts, pred_pts]
     return results, sum(loss_per_batch) / len(loss_per_batch)  # return the average loss
-    
