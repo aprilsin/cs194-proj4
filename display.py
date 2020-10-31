@@ -51,22 +51,24 @@ ToDisplayPoints = Union[Tensor, np.ndarray]
 
 
 def to_display_pts(pts: ToDisplayPoints) -> np.ndarray:
-    if pts.ndim == 2 and pts.shape[1] == 2 and isinstance(pts, np.ndarray):
+    # print(pts.ndim, list(pts.shape), type(pts))
+
+    if isinstance(pts, np.ndarray):
+        assert pts.ndim == 2, pts.shape
         return pts
 
     assert isinstance(pts, Tensor), type(pts)
-
-    if pts.ndim == 2 and pts.shape[1] == 2:
-        return pts.numpy()
-
+    if pts.ndim == 2:
+        assert list(pts.shape)[1] == 2
+        pts = torch.detach(pts).numpy()
+        return pts
     if pts.ndim == 3:
         # remove dimension of size 1 for plt
         pts = torch.squeeze(pts, 0)
         pts = torch.detach(pts).numpy()
         return pts
-
     else:
-        raise ValueError()
+        raise ValueError(type(pts), pts.shape)
 
 
 def show_keypoints(
@@ -90,7 +92,7 @@ def show_keypoints(
         assert valid_keypoints(image, pred_points)
 
     h, w = image.shape
-    print(f"{image.shape = }")
+    # print(f"{image.shape = }")
 
     # show image and plot keypoints
     plt.figure()
@@ -108,8 +110,10 @@ def show_keypoints(
     plt.pause(0.001)  # pause a bit so that plots are updated
     plt.show()
 
+
 def show_training_progress():
     pass
+
 
 def show_epoch():
     pass
