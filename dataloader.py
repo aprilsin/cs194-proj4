@@ -15,8 +15,21 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
-                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
+from typing import (
+    Callable,
+    Dict,
+    FrozenSet,
+    Iterable,
+    List,
+    NamedTuple,
+    NewType,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 import torch
@@ -40,15 +53,18 @@ IBUG_ROOD = Path("ibug_300W_large_face_landmark_dataset")
 assert DANES_ROOT.exists()
 assert IBUD_ROOT.exists()
 
+
 def assert_points(pts):
     assert isinstance(points, Tensor), type(points)
     assert pts.ndim == 2, pts.shape
     assert pts.shape[1] == 2, pts.shape
 
+
 def assert_img(img):
     assert isinstance(img, Tensor), type(img)
     assert img.ndim == 3, img.shape
     assert list(img.shape)[0] == 1, f"{img.shape} is not grayscale"
+
 
 def load_asf(file: os.PathLike) -> Tensor:
     file = Path(file)
@@ -78,35 +94,37 @@ def load_asf(file: os.PathLike) -> Tensor:
 #     return nose_point
 
 
-import xml.etree.ElementTree as ET 
+import xml.etree.ElementTree as ET
 import numpy as np
-import os 
+import os
 import pandas as pd
+
+
 def load_xml():
-    tree = ET.parse('ibug_300W_large_face_landmark_dataset/labels_ibug_300W_train.xml')
+    tree = ET.parse("ibug_300W_large_face_landmark_dataset/labels_ibug_300W_train.xml")
     root = tree.getroot()
     print(root[2])
-    root_dir = 'ibug_300W_large_face_landmark_dataset'
+    root_dir = "ibug_300W_large_face_landmark_dataset"
 
-    bboxes = [] # face bounding box used to crop the image
-    landmarks = [] # the facial keypoints/landmarks for the whole training dataset
-    img_filenames = [] # the image names for the whole dataset
+    bboxes = []  # face bounding box used to crop the image
+    landmarks = []  # the facial keypoints/landmarks for the whole training dataset
+    img_filenames = []  # the image names for the whole dataset
 
     for filename in root[2]:
-        img_filenames.append(os.path.join(root_dir, filename.attrib['file']))
+        img_filenames.append(os.path.join(root_dir, filename.attrib["file"]))
         box = filename[0].attrib
         # x, y for the top left corner of the box, w, h for box width and height
-        bboxes.append([box['left'], box['top'], box['width'], box['height']]) 
+        bboxes.append([box["left"], box["top"], box["width"], box["height"]])
 
         landmark = []
         for num in range(68):
-            x_coordinate = int(filename[0][num].attrib['x'])
-            y_coordinate = int(filename[0][num].attrib['y'])
+            x_coordinate = int(filename[0][num].attrib["x"])
+            y_coordinate = int(filename[0][num].attrib["y"])
             landmark.append([x_coordinate, y_coordinate])
         landmarks.append(landmark)
 
-    landmarks = np.array(landmarks).astype('float32')     
-    bboxes = np.array(bboxes).astype('float32') 
+    landmarks = np.array(landmarks).astype("float32")
+    bboxes = np.array(bboxes).astype("float32")
 
 
 def load_img(img_file: Path):
@@ -121,6 +139,62 @@ def load_img(img_file: Path):
     img = pipeline(t)
     return img
 
+
+
+def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
+    image = TT.Grayscale()
+    h, w = image.shape[-2:]
+
+    # resize
+    out_h, out_w = 240, 320
+    image = TT.Resize((out_h, out_w))(image)
+    # keypoints[..., 0] = keypoints[..., 0] * out_h / h
+    # keypoints[..., 1] = keypoints[..., 1] * out_w / w
+    
+    return image, keypoints
+
+
+def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
+    # print(image.shape, keypoints.shape)
+
+    # TODO make dataloader for colors for this to work
+    # jitter = TT.ColorJitter(brightness=0.3, saturation=0.2)
+    # image = jitter(image)
+
+    # convert tensors to numpy arrays to use skimage
+    image, keypoints = image.squeeze().numpy(), keypoints.numpy()
+    h, w = image.shape
+    center = (h / 2, w / 2)
+
+    rotate_deg = np.random.randint(-12, 12)
+    image = ST.rotate(image, angle=rotate_deg, center=(0, 0))
+    for i in range(len(keypoints)):
+        point = keypoints[i]
+        qx, qy = rotate(point, (0, 0), -rotate_deg)
+        keypoints[i][0] = qx
+        keypoints[i][1] = qy
+
+    # convert back to tensors
+    image = torch.from_numpy(image)
+    image = torch.unsqueeze(image, 0)
+    keypoints = torch.from_numpy(keypoints)
+    # print(image.shape, keypoints.shape)
+    return image, keypoints
+
+
+def rotate(point, origin, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
+
+    The angle should be given in degrees.
+    """
+    angle = np.radians(angle)
+    ox, oy = origin
+    px, py = point
+
+    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+    return qx, qy
 
 class FaceKeypointsDataset(Dataset):
     def __init__(
@@ -182,36 +256,43 @@ class LargeDataset(Dataset):
         transform: Optional[Callable] = None,
     ) -> None:
         self.root_dir = IBUG_ROOT
-        self.tree = ET.parse(self.root/"labels_ibug_300W_train.xml")
+        self.tree = ET.parse(self.root / "labels_ibug_300W_train.xml")
         root = tree.getroot()
-        self.files = root[2] # should be 6666
+        self.files = root[2]  # should be 6666
         self.len = len(self.files)
+
     def __len__(self):
-        return self.len # should be 6666
-    
+        return self.len  # should be 6666
+
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         # TODO add augmentations with if random.random()<THRESHOLD
-        assert idx in np.arange(self.len)
-        
+
         filename = self.files[idx]
 
-        img_name = self.root_dir / filename.attrib['file']
+        img_name = self.root_dir / filename.attrib["file"]
         img = load_img(img_name)
 
         keypts = []
         for num in range(68):
-            x_coordinate = int(filename[0][num].attrib['x'])
-            y_coordinate = int(filename[0][num].attrib['y'])
+            x_coordinate = int(filename[0][num].attrib["x"])
+            y_coordinate = int(filename[0][num].attrib["y"])
             keypts.append([x_coordinate, y_coordinate])
         keypts.append(keypts)
         keypts = torch.as_tensor(points, dtype=torch.float32)
 
-        box = filename[0].attrib
-        # x, y for the top left corner of the box, w, h for box width and height
-        corners = [box['left'], box['top'], box['width'], box['height']]
-
         # crop image background
-        
+
+        box = filename[0].attrib
+        print(box)
+
+        # ratio = 1
+        # ver_shift = box['height'] * (r - 1)
+        # hor_shift = box['width'] * (r - 1)
+
+        # # x, y for the top left corner of the box, w, h for box width and height
+        # crop_params = [box['top'] - ver_shift, box['left'] - hor_shift, box['width'] * r, box['height'] * r]
+        # TT.functional(img, crop_params)
+
         return img, keypts
 
 
