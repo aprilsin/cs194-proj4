@@ -17,21 +17,8 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (
-    Callable,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    NamedTuple,
-    NewType,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
+                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
 
 import numpy as np
 import numpy as np
@@ -104,33 +91,6 @@ def load_nose(file: os.PathLike) -> Tensor:
     nose_point = points[NOSE_INDEX].reshape(1, 2)
     assert_points(nose_point)
     return nose_point
-
-
-# def load_xml(file: xml.etree.ElementTree.Element):
-#     tree = ET.parse("ibug_300W_large_face_landmark_dataset/labels_ibug_300W_train.xml")
-#     root = tree.getroot()
-#     print(root[2])
-#     root_dir = "ibug_300W_large_face_landmark_dataset"
-
-#     bboxes = []  # face bounding box used to crop the image
-#     landmarks = []  # the facial keypoints/landmarks for the whole training dataset
-#     img_filenames = []  # the image names for the whole dataset
-
-#     for filename in root[2]:
-#         img_filenames.append(os.path.join(root_dir, filename.attrib["file"]))
-#         box = filename[0].attrib
-#         # x, y for the top left corner of the box, w, h for box width and height
-#         bboxes.append([box["left"], box["top"], box["width"], box["height"]])
-
-#         landmark = []
-#         for num in range(68):
-#             x_coordinate = int(filename[0][num].attrib["x"])
-#             y_coordinate = int(filename[0][num].attrib["y"])
-#             landmark.append([x_coordinate, y_coordinate])
-#         landmarks.append(landmark)
-
-#     landmarks = np.array(landmarks).astype("float32")
-#     bboxes = np.array(bboxes).astype("float32")
 
 
 def load_img(img_file: Path):
@@ -320,13 +280,6 @@ class LargeDataset(Dataset):
         h, w = img.shape[-2:]
         keypts[:, 0] /= w
         keypts[:, 1] /= h
-        print(img.shape)
-        # print(keypts)
         assert_img(img)
         assert_points(keypts)
         return img, keypts
-
-
-if __name__ == "__main__":
-    train = FaceKeypointsDataset(idxs=range(1, 33))
-    val = FaceKeypointsDataset(idxs=range(33, 41))
