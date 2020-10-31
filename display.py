@@ -15,12 +15,12 @@ def valid_keypoints(image, keypoints):
     assert rows.max() >= 1 and cols.max() >= 1, f"{rows.max()}, {cols.max()}"
 
     # make sure that the keypoints are in bounds
-    assert (0 <= rows).all() and (
-        rows < h
-    ).all(), f"{rows.min() = }, {rows.max() = } out of bounds for {image.shape = }"
-    assert (0 <= cols).all() and (
-        cols < h
-    ).all(), f"{cols.min() = }, {cols.max() = } out of bounds for {image.shape = }"
+    # assert (0 <= rows).all() and (
+    #     rows < h
+    # ).all(), f"{rows.min() = }, {rows.max() = } out of bounds for {image.shape = }"
+    # assert (0 <= cols).all() and (
+    #     cols < h
+    # ).all(), f"{cols.min() = }, {cols.max() = } out of bounds for {image.shape = }"
 
     return True
 

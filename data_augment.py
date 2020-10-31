@@ -47,11 +47,21 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     h, w = image.shape
 
     rotate_deg = np.random.randint(-15, 15)
-    image = ST.rotate(image, rotate_deg)
-    
-    R = rotation_mat(rotate_deg, center=(h/2, w/2))
-    print(R.shape, keypoints.T)
+    image = ST.rotate(image, rotate_deg, center=(h / 2, w / 2))
+
+    R = rotation_mat(rotate_deg)
+    # print(R.shape, keypoints.T)
+    keypoints = np.flip(keypoints, axis=0)
+    print(keypoints.T.shape)
     keypoints = (R @ keypoints.T).T
+    cx, cy = w / 2, h / 2
+    for i in range(len(keypoints)):
+        
+    new_x = cx + (x - cx) * np.cos(angle) - (y - cy) * np.cos(angle),
+    new_y = cy + (x - cx) * np.sin(angle) + (y - cy) * np.sin(angle)
+    print(keypoints.shape)
+    keypoints[:, 0] += h / 2
+    keypoints[:, 1] += w / 2
 
     # convert back to tensors
     image = torch.from_numpy(image)
@@ -61,10 +71,8 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     return image, keypoints
 
 
-def rotation_mat(rot_deg, center):
-    center_h, center_w = center
-    center_x, center_y = center_w, center_h
+def rotation_mat(rot_deg):
     theta = np.radians(rot_deg)
     c, s = np.cos(theta), np.sin(theta)
-    R = np.array(((c, -s, center_x - center_y), (s, c, center_x + center_y)))
+    R = np.array(((c, -s), (s, c)))
     return R
