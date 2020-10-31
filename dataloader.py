@@ -15,21 +15,8 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (
-    Callable,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    NamedTuple,
-    NewType,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
+                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
 
 import numpy as np
 import torch
@@ -84,7 +71,6 @@ def load_img(img_file: Path):
             TT.ToPILImage(),
             TT.ToTensor(),
             TT.Grayscale(),
-            # TODO add Resize
         ]
     )
     img = pipeline(t)
@@ -96,7 +82,7 @@ class FaceKeypointsDataset(Dataset):
         self,
         idxs: Sequence[int],
         root_dir: Path,
-        transform: bool = False,
+        transform: Optional[Callable] = None,
     ) -> None:
         self.root_dir = root_dir
         self.img_files = sorted(
@@ -129,8 +115,8 @@ class FaceKeypointsDataset(Dataset):
         # TODO is rounding necessary?
         # points=points.round()
 
-        if self.transform:
-            img, points = self.augment(img, points)
+        if self.transform is not None:
+            img, points = self.transform(img, points)
 
         assert isinstance(img, Tensor), type(img)
         assert isinstance(points, Tensor), type(points)

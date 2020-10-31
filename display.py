@@ -96,9 +96,6 @@ def show_keypoints(
 
     # show image and plot keypoints
     plt.figure()
-    # print(truth_points[:, 0], truth_points[:, 1])
-    # print(truth_points[:, 0] * h, truth_points[:, 1] * w)
-    # print(truth_points[:, 0] * w, truth_points[:, 1] * h)
     plt.imshow(image, cmap="gray")
     plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
     # plt.scatter(truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x")

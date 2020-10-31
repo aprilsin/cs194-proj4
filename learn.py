@@ -1,17 +1,9 @@
 import torch
 import torch.nn.functional as F
 import torch.nn.functional as F
-from torch.nn import (
-    Conv2d,
-    Flatten,
-    Identity,
-    Linear,
-    MaxPool2d,
-    Module,
-    MSELoss,
-    ReLU,
-    Sequential,
-)
+from skimage import io
+from torch.nn import (Conv2d, Flatten, Identity, Linear, MaxPool2d, Module,
+                      MSELoss, ReLU, Sequential)
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm.contrib import tenumerate
@@ -19,6 +11,7 @@ from tqdm.contrib import tenumerate
 from display import show_keypoints
 
 
+# do training for one epoch
 def train(train_loader, model, learning_rate):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)

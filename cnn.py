@@ -2,16 +2,8 @@
 
 import torch
 import torch.nn.functional as F
-from torch.nn import (
-    Conv2d,
-    Flatten,
-    Identity,
-    Linear,
-    MaxPool2d,
-    Module,
-    ReLU,
-    Sequential,
-)
+from torch.nn import (Conv2d, Flatten, Identity, Linear, MaxPool2d, Module,
+                      ReLU, Sequential)
 
 
 class NoseFinder(Module):
