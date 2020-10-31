@@ -89,13 +89,20 @@ def show_keypoints(
         assert pred_points.ndim == 2 and pred_points.shape[1] == 2, pred_points.shape
         assert valid_keypoints(image, pred_points)
 
+    h, w = image.shape
+    print(f"{image.shape = }")
+
     # show image and plot keypoints
     plt.figure()
-
+    # print(truth_points[:, 0], truth_points[:, 1])
+    # print(truth_points[:, 0] * h, truth_points[:, 1] * w)
+    # print(truth_points[:, 0] * w, truth_points[:, 1] * h)
     plt.imshow(image, cmap="gray")
-    plt.scatter(truth_points[:, 0], truth_points[:, 1], s=35, c="g", marker="x")
+    plt.scatter(truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x")
     if pred_points is not None:
-        plt.scatter(pred_points[:, 0], pred_points[:, 1], s=35, c="r", marker="x")
+        plt.scatter(
+            pred_points[:, 0] * h, pred_points[:, 1] * w, s=35, c="r", marker="x"
+        )
 
     plt.pause(0.001)  # pause a bit so that plots are updated
     plt.show()

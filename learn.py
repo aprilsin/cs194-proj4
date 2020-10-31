@@ -1,8 +1,17 @@
 import torch
 import torch.nn.functional as F
 import torch.nn.functional as F
-from torch.nn import (Conv2d, Flatten, Identity, Linear, MaxPool2d, Module,
-                      MSELoss, ReLU, Sequential)
+from torch.nn import (
+    Conv2d,
+    Flatten,
+    Identity,
+    Linear,
+    MaxPool2d,
+    Module,
+    MSELoss,
+    ReLU,
+    Sequential,
+)
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm.contrib import tenumerate
@@ -13,8 +22,8 @@ from display import show_keypoints
 def train(train_loader, model, learning_rate, epochs):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
+
     loss_fn = F.mse_loss
-    learning_rate = 1e-3
     optimizer = Adam(model.parameters(), lr=learning_rate)
 
     for ep in range(epochs):
@@ -46,7 +55,7 @@ def test(test_loader, trained_model):
         img, keypts = img.to(device), keypts.to(device)
         pred_keypts = trained_model(img)
         show_keypoints(img, keypts, pred_keypts)
-        
+
         # Compute and print loss.
         loss = loss_fn(pred_keypts, keypts)
         print(i, loss.item())

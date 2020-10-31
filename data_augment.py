@@ -36,6 +36,7 @@ import torchvision
 import torchvision.io as TIO
 import torchvision.transforms as TT
 import torchvision.transforms.functional as TF
+
 # import skimage as sk
 from skimage import io
 from skimage.util import img_as_float
@@ -55,7 +56,7 @@ class Rescale(object):
             to output_size keeping aspect ratio the same.
     """
 
-    def __init__(self, out_w, out_h):
+    def __init__(self, out_h, out_w):
         assert isinstance(out_h, int)
         assert isinstance(out_w, int)
         self.out_h = out_h
@@ -67,14 +68,8 @@ class Rescale(object):
 
         h, w = image.shape[-2:]
         image = TT.Resize((self.out_h, self.out_w))(image)
-
-        # h and w are swapped for landmarks because for images,
-        # x and y axes are axis 1 and 0 respectively
-        # print(landmarks)
-
-        # landmarks = landmarks * [new_w / w, new_h / h]
-        keypoints[..., 0] = keypoints[..., 0] * self.out_w / w
-        keypoints[..., 1] = keypoints[..., 1] * self.out_h / h
+        # keypoints[..., 0] = keypoints[..., 0] * self.out_h / h
+        # keypoints[..., 1] = keypoints[..., 1] * self.out_w / w
 
         image = torch.as_tensor(image)
         # keypoints = torch.as_tensor(keypoints)
