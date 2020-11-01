@@ -37,7 +37,7 @@ def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     image = TT.Resize((out_h, out_w))(image)
     # keypoints[..., 0] = keypoints[..., 0] * out_h / h
     # keypoints[..., 1] = keypoints[..., 1] * out_w / w
-    assert_img(img)
+    assert_img(image)
     assert_points(keypoints)
     return image, keypoints
 
@@ -72,3 +72,6 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     assert_img(image)
     assert_points(keypoints)
     return image, keypoints
+
+def part3_augment(img, keypts):
+    return img, keypts
