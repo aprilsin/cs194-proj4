@@ -218,7 +218,7 @@ class NoseKeypointDataset(FaceKeypointsDataset):
 
 class XmlSample:
     def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr:int, wr:int
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
     ):
         self.root = root_dir
         self.source = xml_file
@@ -254,10 +254,18 @@ class XmlSample:
             width = int(round(width * self.wr))
         return top, left, height, width
 
+        def get_sample(self):
+            img = torch.empty(224, 224)
+            keypts = torch.empty(68, 2)
+            # TODO fix assertions so it works with empty tensors
+            # assert_img(img)
+            # assert_points(keypts)
+            return img, keypts
+
 
 class XmlTrainSample(XmlSample):
     def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr:int, wr:int
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
     ):
         super().__init__(root_dir, xml_file, filename, hr, wr)
 
@@ -271,7 +279,7 @@ class XmlTrainSample(XmlSample):
         keypts = torch.as_tensor(keypts, dtype=torch.float32)
         return keypts
 
-    def get_train_sample(self):
+    def get_sample(self):
         img = self.load_img()
         keypts = self.load_pts()
 
@@ -320,7 +328,7 @@ class XmlTrainSample(XmlSample):
 
 class XmlTestSample(XmlSample):
     def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr:int, wr:int
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
     ):
         super().__init__(root_dir, xml_file, filename, hr, wr)
 
@@ -347,11 +355,14 @@ class LargeDataset(Dataset):  # loads xml files
         self,
         data_dir: Path,
         xml_file: Path,
+        sample_class: type = XmlSample,
         transform: Optional[Callable] = None,
     ) -> None:
 
         self.data_dir = data_dir
         self.xml = xml_file
+        self.sample_class = sample_class
+        self.transform = transform
 
         tree = ET.parse(self.xml)
         all_files = tree.getroot()[2]
@@ -359,8 +370,8 @@ class LargeDataset(Dataset):  # loads xml files
         # initialize all samples in dataset as XmlSample
         self.samples = []
         for f in all_files:
-            sample = XmlSample(
-                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1, wr=1
+            sample = sample_class(
+                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1.4, wr=1.2
             )
             self.samples.append(sample)
 
@@ -369,7 +380,7 @@ class LargeDataset(Dataset):  # loads xml files
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         sample = self.samples[idx]
-        return sample.get_train_sample()
+        return sample.get_sample()
 
 
 class LargeTrainDataset(LargeDataset):  # loads xml files
@@ -379,20 +390,7 @@ class LargeTrainDataset(LargeDataset):  # loads xml files
         xml_file: Path,
         transform: Optional[Callable] = None,
     ) -> None:
-
-        self.data_dir = data_dir
-        self.xml = xml_file
-
-        tree = ET.parse(self.xml)
-        all_files = tree.getroot()[2]
-
-        # initialize all samples in dataset as XmlSample
-        self.samples = []
-        for f in all_files:
-            sample = XmlTrainSample(
-                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1, wr=1
-            )
-            self.samples.append(sample)
+        super().__init__(data_dir, xml_file, transform)
 
     def __len__(self):
         return len(self.samples)  # should be 6666
@@ -409,20 +407,7 @@ class LargeTestDataset(LargeDataset):  # loads xml files
         xml_file: Path,
         transform: Optional[Callable] = None,
     ) -> None:
-
-        self.data_dir = data_dir
-        self.xml = xml_file
-
-        tree = ET.parse(self.xml)
-        all_files = tree.getroot()[2]
-
-        # initialize all samples in dataset as XmlSample
-        self.samples = []
-        for f in all_files:
-            sample = XmlTestSample(
-                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1, wr=1
-            )
-            self.samples.append(sample)
+        super().__init__(data_dir, xml_file, transform)
 
     def __len__(self):
         return len(self.samples)  # should be 6666
@@ -430,7 +415,7 @@ class LargeTestDataset(LargeDataset):  # loads xml files
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         sample = self.samples[idx]
         # TODO check empty Tensor
-        return sample.load_img(), torch.empty(0) # there are no keypoints in test set
+        return sample.load_img(), torch.empty(0)  # there are no keypoints in test set
 
 
 def to_panda(filename, keypts: Tensor):
