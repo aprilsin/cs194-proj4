@@ -206,7 +206,6 @@ class XmlSample:
     def load_img(self):
         # load image from file
         img_name = self.root / self.file.attrib["file"]
-        print(img_name)
         img = load_img(img_name)
         assert_img(img)
         return img
