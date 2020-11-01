@@ -218,7 +218,7 @@ class NoseKeypointDataset(FaceKeypointsDataset):
 
 class XmlSample:
     def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr=1.4, wr=1.2
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr:int, wr:int
     ):
         self.root = root_dir
         self.source = xml_file
