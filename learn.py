@@ -5,7 +5,7 @@ from tqdm.contrib import tenumerate
 
 import dataloader
 from constants import DEVICE
-from display import show_keypoints
+import display
 
 
 # do training for one epoch
@@ -23,7 +23,6 @@ def train(train_loader, model, learning_rate):
 
         # predict keypoints with current model
         pred_keypts = model(batched_imgs)
-        dataloader.assert_points(pred_keypts)
 
         # Compute loss
         loss = loss_fn(pred_keypts, batched_keypts)
@@ -58,7 +57,7 @@ def test(test_loader, trained_model, show_every=1, save=False):
             if i % show_every == 0:
                 chosen = [1, 12, 18]
                 for i in chosen:
-                    show_keypoints(batched_imgs[i], batched_keypts[i], pred_keypts[i])
+                    display.show_keypoints(batched_imgs[i], batched_keypts[i], pred_keypts[i])
 
             loss_per_batch.append(loss.item())
 
@@ -67,3 +66,17 @@ def test(test_loader, trained_model, show_every=1, save=False):
 
     results = [imgs, keypts, pred_pts]
     return results, sum(loss_per_batch) / len(loss_per_batch)  # return the average loss
+
+def train_and_test(train_loader, test_loader, model, epochs, learn_rate, show_every):
+    loss_per_epoch = []
+    for ep in range(epochs):
+
+        print(f"========== Start Epoch {ep} ==========")
+
+        trained_model, train_loss = train(train_loader, model, learn_rate)
+        _, valid_loss = test(test_loader, trained_model, show_every)
+
+        # loss_per_epoch.append([train_loss, valid_loss])
+        loss_per_epoch.append(train_loss)
+        display.print_epoch(ep, train_loss, valid_loss)
+    return loss_per_epoch

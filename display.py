@@ -61,7 +61,7 @@ def show_keypoints(
     image: ToDisplayImage,
     truth_points: Union[Tensor, np.ndarray] = None,
     pred_points: Union[Tensor, np.ndarray] = None,
-    color: bool = True,
+    color: bool = False,
 ) -> None:
     """Show image with keypoints."""
 
@@ -95,22 +95,31 @@ def show_keypoints(
     plt.show()
 
 
-def show_progress(loss_per_ep):
-    x = np.arange(len(loss_per_ep))
+# def show_progress(loss_per_ep):
+#     x = np.arange(len(loss_per_ep))
 
+#     plt.figure()
+#     plt.title("Training Loss")
+#     plt.ylabel("loss")
+#     plt.xlabel("epochs")
+#     plt.xticks(x)
+#     plt.plot(loss_per_ep[:, 0])
+
+#     plt.figure()
+#     plt.title("Validation Loss")
+#     plt.ylabel("loss")
+#     plt.xlabel("epochs")
+#     plt.xticks(x)
+#     plt.plot(loss_per_ep[:, 1])
+
+def show_progress(loss_per_ep, title="Loss over Epochs"):
+    x = np.arange(len(loss_per_ep))
     plt.figure()
-    plt.title("Training Loss")
+    plt.title(title)
     plt.ylabel("loss")
     plt.xlabel("epochs")
     plt.xticks(x)
     plt.plot(loss_per_ep[:, 0])
-
-    plt.figure()
-    plt.title("Validation Loss")
-    plt.ylabel("loss")
-    plt.xlabel("epochs")
-    plt.xticks(x)
-    plt.plot(loss_per_ep[:, 1])
 
 
 def print_epoch(ep, train_loss, valid_loss) -> None:

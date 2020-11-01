@@ -52,7 +52,7 @@ def load_img(img_file: Path):
         [
             TT.ToPILImage(),
             TT.ToTensor(),
-            # TT.Grayscale(),
+            TT.Grayscale(),
         ]
     )
     img = pipeline(t)
@@ -308,7 +308,7 @@ class LargeTestDataset(LargeDataset):  # loads xml files
 def get_id(filename: ET.Element):
     img_name = filename.attrib["file"]
     return img_name
-    
+
 def to_panda(filename: ET.Element, keypts: Tensor):
     return True
 
