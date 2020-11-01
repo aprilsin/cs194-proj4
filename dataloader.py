@@ -19,7 +19,6 @@ from logging import debug, info, log
 from pathlib import Path
 from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
                     NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
-from xml.etree import Element
 
 import numpy as np
 import numpy as np
@@ -38,8 +37,9 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import utils
 
-DANES_ROOT = Path("imm_face_db")
-IBUG_ROOT = Path("ibug_300W_large_face_landmark_dataset")
+DATA_DIR = Path("data")
+DANES_ROOT = DATA_DIR / Path("imm_face_db")
+# IBUG_ROOT = DATA_DIR / Path("ibug_300W_large_face_landmark_dataset")
 # assert DANES_ROOT.exists()
 # assert IBUG_ROOT.exists()
 
@@ -108,7 +108,7 @@ def load_img(img_file: Path):
     return img
 
 
-def load_xml(root_dir: Path, filename: Element) -> Tuple[Tensor, Tensor]:
+def load_xml(root_dir: Path, filename: ET.Element) -> Tuple[Tensor, Tensor]:
 
     img_name = root_dir / filename.attrib["file"]
     img = load_img(img_name)
@@ -274,18 +274,15 @@ class NoseKeypointDataset(FaceKeypointsDataset):
 class LargeDataset(Dataset):
     def __init__(
         self,
-        idxs: Sequence[int],
-        root_dir: Path = IBUG_ROOT,
+        xml_file: Path,
         transform: Optional[Callable] = None,
     ) -> None:
-        self.root_dir = root_dir
-        self.tree = ET.parse(self.root_dir / "labels_ibug_300W_train.xml")
-        # root = tree.getroot()
-        self.files = self.tree.getroot()[2]  # should be 6666
-        self.len = len(self.files)
+        self.xml = xml_file
+        tree = ET.parse(xml_file)
+        self.files = tree.getroot()[2]  # should be 6666
 
     def __len__(self):
-        return self.len  # should be 6666
+        return len(self.files)  # should be 6666
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
 
