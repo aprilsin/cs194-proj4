@@ -135,7 +135,7 @@ class XmlSample:
         return img
 
     def load_pts(self):
-        return torch.empty(0)
+        raise ValueError("This function should not be called")
 
     def get_box(self, adjust=True):
 
@@ -239,6 +239,19 @@ class LargeDataset(Dataset):  # loads xml files
         return len(self.samples)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        return None
+
+
+class LargeTrainDataset(LargeDataset):  # loads xml files
+    def __init__(
+        self,
+        data_dir: Path,
+        xml_file: Path,
+        transform: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(data_dir, xml_file, XmlTrainSample, transform)
+
+    def __getitem__(self, idx:int):
         sample = self.samples[idx]
         img = sample.load_img()
         keypts = sample.load_pts()
@@ -274,16 +287,6 @@ class LargeDataset(Dataset):  # loads xml files
         return img, keypts
 
 
-class LargeTrainDataset(LargeDataset):  # loads xml files
-    def __init__(
-        self,
-        data_dir: Path,
-        xml_file: Path,
-        transform: Optional[Callable] = None,
-    ) -> None:
-        super().__init__(data_dir, xml_file, XmlTrainSample, transform)
-
-
 class LargeTestDataset(LargeDataset):  # loads xml files
     def __init__(
         self,
@@ -293,6 +296,29 @@ class LargeTestDataset(LargeDataset):  # loads xml files
     ) -> None:
         super().__init__(data_dir, xml_file, XmlTestSample, transform)
 
+    def __getitem__(self, idx:int):
+        sample = self.samples[idx]
+        img = sample.load_img()
+
+        # crop image
+        top, left, height, width = sample.get_box()
+        img = TT.functional.crop(
+            img,
+            top=top,
+            left=left,
+            height=height,
+            width=width,
+        )
+        assert_img(img)
+
+        # resize to 224x224
+        img = TT.Resize((224, 224))(img)
+
+        # if self.transform is not None:
+        #     img, keypts = self.transform(img, keypts)
+
+        assert_img(img)
+        return img
 
 # def get_id(filename: ET.Element):
 #     img_name = filename.attrib["file"]
