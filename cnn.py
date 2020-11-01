@@ -132,3 +132,9 @@ class FaceFinder(Module):
         # print("FC2: ", x.shape)
 
         return x
+
+
+def ResNet():
+    import torchvision.models as models
+    model = models.resnet18()
+    print(model.parameters)

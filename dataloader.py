@@ -268,11 +268,13 @@ class NoseKeypointDataset(FaceKeypointsDataset):
 class LargeDataset(Dataset):
     def __init__(
         self,
-        xml_file: Path,
+        xml_name: str,
+        root_dir: Path,
         transform: Optional[Callable] = None,
     ) -> None:
-        self.xml = xml_file
-        tree = ET.parse(xml_file)
+        self.xml = root_dir / Path(xml_name)
+        self.root_dir = root_dir
+        tree = ET.parse(self.xml)
         self.files = tree.getroot()[2]  # should be 6666
 
     def __len__(self):
