@@ -70,7 +70,8 @@ def test(test_loader, trained_model, show_every=1, save=False):
 
 
 def train_and_test(train_loader, test_loader, model, epochs, learn_rate, show_every):
-    loss_per_epoch = []
+    all_train_loss = []
+    all_valid_loss = []
     for ep in range(epochs):
 
         print(f"========== Start Epoch {ep} ==========")
@@ -78,7 +79,7 @@ def train_and_test(train_loader, test_loader, model, epochs, learn_rate, show_ev
         trained_model, train_loss = train(train_loader, model, learn_rate)
         _, valid_loss = test(test_loader, trained_model, show_every)
 
-        # loss_per_epoch.append([train_loss, valid_loss])
-        loss_per_epoch.append(train_loss)
+        all_train_loss.append(train_loss)
+        # all_valid_loss.append(valid_loss)
         display.print_epoch(ep, train_loss, valid_loss)
-    return loss_per_epoch
+    return all_train_loss # , all_valid_loss
