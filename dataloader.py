@@ -5,6 +5,7 @@ import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Callable, List, Optional, Sequence, Tuple
+from PIL import Image
 
 import numpy as np
 import skimage.transform as ST
