@@ -1,20 +1,26 @@
 # This file is for loading images and keypoints customized for the Danes and ibug dataset.
 # data source: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
-import math
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Callable, List, Optional, Sequence, Tuple
+from typing import (
+    Callable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
-import numpy as np
-import skimage.transform as ST
 import torch
-import torchvision
 import torchvision.transforms as TT
+from PIL import Image
 from torch import Tensor
 from torch.utils.data import Dataset
 
-from my_types import assert_img, assert_points
+from my_types import (
+    assert_img,
+    assert_points,
+)
 
 
 def load_asf(file: os.PathLike) -> Tensor:
@@ -47,15 +53,17 @@ def load_nose(file: os.PathLike) -> Tensor:
 
 
 def load_img(img_file: Path):
-    t = torchvision.io.read_image(str(img_file))
+    t = Image.open((img_file))
     pipeline = TT.Compose(
         [
-            TT.ToPILImage(),
+            # TT.ToPILImage(),
             TT.ToTensor(),
-            TT.Grayscale(),
         ]
     )
     img = pipeline(t)
+    if img.shape[0] == 3:
+        img = TT.Grayscale()(img)
+
     assert_img(img)
     return img
 
@@ -238,7 +246,7 @@ class LargeDataset(Dataset):  # loads xml files
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
 
         sample = self.samples[idx]
-        filename = sample.filename
+        sample.filename
         img = sample.load_img()
         keypts = sample.load_pts()
 
@@ -305,22 +313,22 @@ class LargeTestDataset(LargeDataset):  # loads xml files
     ) -> None:
         super().__init__(data_dir, xml_file, XmlTestSample, transform)
 
+
 def get_id(filename: ET.Element):
     img_name = filename.attrib["file"]
     return img_name
+
 
 def to_panda(filename: ET.Element, keypts: Tensor):
     return True
 
 
 def save_kaggle(keypts1008: List) -> bool:
-    """
-    Saves predicted keypoints of Part 3 test set as a csv file
+    """Saves predicted keypoints of Part 3 test set as a csv file.
 
     keypts1008: List of 1008 tensors.
         Each tensor contains the 68 predicted keypoints of a test sample.
         Each tensor is of shape (68, 2).
-
     """
     # TODO
 

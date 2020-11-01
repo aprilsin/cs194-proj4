@@ -1,7 +1,14 @@
 # Convolutional Neural Networks
 import torch
 import torchvision
-from torch.nn import Conv2d, Flatten, Linear, MaxPool2d, Module, ReLU
+from torch.nn import (
+    Conv2d,
+    Flatten,
+    Linear,
+    MaxPool2d,
+    Module,
+    ReLU,
+)
 
 
 class NoseFinder(Module):
@@ -138,10 +145,15 @@ class ResNet(Module):
         super().__init__()
 
         self.model = torchvision.models.resnet18()
-        self.model.conv1.in_channels = 1
-        self.model.fc.out_features = 68 * 2
+        self.model.conv1 = Conv2d(
+            1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
+        )
+        # self.model.conv1.in_channels = 1
+        # self.model.fc.out_features = 68 * 2
+        self.model.fc = Linear(in_features=512, out_features=136, bias=True)
 
     def forward(self, x):
         x = self.model(x)
         x = torch.sigmoid(x)
+        x = x.reshape(-1, 68, 2)
         return x

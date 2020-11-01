@@ -1,17 +1,16 @@
 import math
-import typing
-from pathlib import Path
-from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
-                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
+from typing import Tuple
 
 import numpy as np
 import skimage.transform as ST
 import torch
 import torchvision.transforms as TT
-from skimage import io
 from torch import Tensor
 
-from my_types import assert_img, assert_points
+from my_types import (
+    assert_img,
+    assert_points,
+)
 
 
 def rotate(point, origin, angle):
@@ -35,7 +34,7 @@ def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     image = TT.Resize((out_h, out_w))(image)
 
     assert_img(image)
-    assert_points(keypoints) # do nothing, should be ratios
+    assert_points(keypoints)  # do nothing, should be ratios
     return image, keypoints
 
 
@@ -62,6 +61,7 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     assert_img(image)
     assert_points(keypoints)
     return image, keypoints
+
 
 def part3_augment(img, keypts):
     return img, keypts

@@ -3,9 +3,8 @@ import torch.nn.functional as F
 from torch.optim import Adam
 from tqdm.contrib import tenumerate
 
-import dataloader
-from constants import DEVICE
 import display
+from constants import DEVICE
 
 
 # do training for one epoch
@@ -57,7 +56,9 @@ def test(test_loader, trained_model, show_every=1, save=False):
             if i % show_every == 0:
                 chosen = [1, 12, 18]
                 for i in chosen:
-                    display.show_keypoints(batched_imgs[i], batched_keypts[i], pred_keypts[i])
+                    display.show_keypoints(
+                        batched_imgs[i], batched_keypts[i], pred_keypts[i]
+                    )
 
             loss_per_batch.append(loss.item())
 
@@ -66,6 +67,7 @@ def test(test_loader, trained_model, show_every=1, save=False):
 
     results = [imgs, keypts, pred_pts]
     return results, sum(loss_per_batch) / len(loss_per_batch)  # return the average loss
+
 
 def train_and_test(train_loader, test_loader, model, epochs, learn_rate, show_every):
     loss_per_epoch = []

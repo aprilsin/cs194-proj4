@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from torch import Tensor
 
+
 ToDisplayImage = Union[Tensor, np.ndarray]
 
 
@@ -111,6 +112,7 @@ def show_keypoints(
 #     plt.xlabel("epochs")
 #     plt.xticks(x)
 #     plt.plot(loss_per_ep[:, 1])
+
 
 def show_progress(loss_per_ep, title="Loss over Epochs"):
     x = np.arange(len(loss_per_ep))
