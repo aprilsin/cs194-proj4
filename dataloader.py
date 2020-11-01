@@ -1,26 +1,20 @@
 # This file is for loading images and keypoints customized for the Danes and ibug dataset.
 # data source: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
+import math
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import (
-    Callable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-)
+from typing import Callable, List, Optional, Sequence, Tuple
 
+import numpy as np
+import skimage.transform as ST
 import torch
+import torchvision
 import torchvision.transforms as TT
-from PIL import Image
 from torch import Tensor
 from torch.utils.data import Dataset
 
-from my_types import (
-    assert_img,
-    assert_points,
-)
+from my_types import assert_img, assert_points
 
 
 def load_asf(file: os.PathLike) -> Tensor:
@@ -244,30 +238,6 @@ class LargeDataset(Dataset):  # loads xml files
         return len(self.samples)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-
-        sample = self.samples[idx]
-        sample.filename
-        img = sample.load_img()
-        keypts = sample.load_pts()
-
-        if self.transform is not None:
-            img, keypts = self.transform(img, keypts)
-
-        # assert_img(img)
-        # assert_points(keypts)
-        return img, keypts  # , filename
-
-
-class LargeTrainDataset(LargeDataset):  # loads xml files
-    def __init__(
-        self,
-        data_dir: Path,
-        xml_file: Path,
-        transform: Optional[Callable] = None,
-    ) -> None:
-        super().__init__(data_dir, xml_file, XmlTrainSample, transform)
-
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         sample = self.samples[idx]
         img = sample.load_img()
         keypts = sample.load_pts()
@@ -300,8 +270,17 @@ class LargeTrainDataset(LargeDataset):  # loads xml files
 
         assert_img(img)
         assert_points(keypts)
-
         return img, keypts
+
+
+class LargeTrainDataset(LargeDataset):  # loads xml files
+    def __init__(
+        self,
+        data_dir: Path,
+        xml_file: Path,
+        transform: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(data_dir, xml_file, XmlTrainSample, transform)
 
 
 class LargeTestDataset(LargeDataset):  # loads xml files
@@ -314,21 +293,22 @@ class LargeTestDataset(LargeDataset):  # loads xml files
         super().__init__(data_dir, xml_file, XmlTestSample, transform)
 
 
-def get_id(filename: ET.Element):
-    img_name = filename.attrib["file"]
-    return img_name
+# def get_id(filename: ET.Element):
+#     img_name = filename.attrib["file"]
+#     return img_name
 
-
-def to_panda(filename: ET.Element, keypts: Tensor):
-    return True
+# def to_panda(filename: ET.Element, keypts: Tensor):
+#     return True
 
 
 def save_kaggle(keypts1008: List) -> bool:
-    """Saves predicted keypoints of Part 3 test set as a csv file.
+    """
+    Saves predicted keypoints of Part 3 test set as a csv file
 
     keypts1008: List of 1008 tensors.
         Each tensor contains the 68 predicted keypoints of a test sample.
         Each tensor is of shape (68, 2).
+
     """
     # TODO
 
@@ -336,6 +316,8 @@ def save_kaggle(keypts1008: List) -> bool:
     assert all(assert_points(keypts) for keypts in keypts1008)
     all_pts = keypts1008
     all_pds = []
-    for keypts in all_pts:
-        all_pds.append(to_panda(keypts))
+    for i in range(1008):
+        id = i
+        pred_keypts = all_pts[i]
+
     return True
