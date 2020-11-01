@@ -30,15 +30,12 @@ def rotate(point, origin, angle):
 
 
 def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
-    h, w = image.shape[-2:]
 
-    # resize
-    out_h, out_w = 240, 320
-    image = TT.Resize((out_h, out_w))(image)
-    # keypoints[..., 0] = keypoints[..., 0] * out_h / h
-    # keypoints[..., 1] = keypoints[..., 1] * out_w / w
+    transform = TT.Compose(TT.Resize(240, 320), TT.Grayscale())
+    image = transform(image)
+
     assert_img(image)
-    assert_points(keypoints)
+    assert_points(keypoints) # do nothing, should be ratios
     return image, keypoints
 
 
@@ -46,8 +43,8 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     # print(image.shape, keypoints.shape)
 
     # TODO make dataloader for colors for this to work
-    # jitter = TT.ColorJitter(brightness=0.3, saturation=0.2)
-    # image = jitter(image)
+    jitter = TT.ColorJitter(brightness=0.3, saturation=0.2)
+    image = jitter(image)
 
     # convert tensors to numpy arrays to use skimage
     image, keypoints = image.squeeze().numpy(), keypoints.numpy()

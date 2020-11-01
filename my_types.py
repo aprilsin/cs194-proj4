@@ -29,6 +29,6 @@ def assert_points(pts):
 def assert_img(img):
     assert isinstance(img, Tensor), type(img)
     assert img.ndim == 3, img.shape
-    assert list(img.shape)[0] == 1, f"{img.shape} is not grayscale"
+    # assert list(img.shape)[0] == 1, f"{img.shape} is not grayscale"
     assert all(x > 0 for x in list(img.shape)), img.shape
     return True

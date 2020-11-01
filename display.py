@@ -61,7 +61,7 @@ def show_keypoints(
     image: ToDisplayImage,
     truth_points: Union[Tensor, np.ndarray] = None,
     pred_points: Union[Tensor, np.ndarray] = None,
-    color: bool = False,
+    color: bool = True,
 ) -> None:
     """Show image with keypoints."""
 

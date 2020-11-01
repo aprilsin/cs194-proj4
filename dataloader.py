@@ -52,7 +52,7 @@ def load_img(img_file: Path):
         [
             TT.ToPILImage(),
             TT.ToTensor(),
-            TT.Grayscale(),
+            # TT.Grayscale(),
         ]
     )
     img = pipeline(t)

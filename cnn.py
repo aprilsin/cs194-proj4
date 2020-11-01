@@ -9,7 +9,7 @@ class NoseFinder(Module):
         super().__init__()
 
         # formula: (N - F) / stride + 1
-        self.C1 = Conv2d(1, 24, 3)  # Conv2d(1, 15, 3)
+        self.C1 = Conv2d(3, 24, 3)  # Conv2d(1, 15, 3)
         self.C2 = Conv2d(24, 30, 3)  # Conv2d(15, 28, 3)
         self.C3 = Conv2d(30, 20, 3)  # Conv2d(28, 20, 3)
         # self.C4 = Conv2d(30, 20, 3)
@@ -70,7 +70,7 @@ class FaceFinder(Module):
         super().__init__()
 
         # formula: (N - F) / stride + 1
-        self.C1 = Conv2d(1, 18, 3)
+        self.C1 = Conv2d(3, 18, 3)
         self.C2 = Conv2d(18, 24, 3)
         self.C3 = Conv2d(24, 30, 3)
 
@@ -138,7 +138,7 @@ class ResNet(Module):
         super().__init__()
 
         self.model = torchvision.models.resnet18()
-        self.model.conv1.in_channels = 1
+        self.model.conv1.in_channels = 3
         self.model.fc.out_features = 68 * 2
 
     def forward(self, x):
