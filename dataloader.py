@@ -17,8 +17,21 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
-                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
+from typing import (
+    Callable,
+    Dict,
+    FrozenSet,
+    Iterable,
+    List,
+    NamedTuple,
+    NewType,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 import numpy as np
@@ -180,12 +193,13 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     center = (h / 2, w / 2)
 
     rotate_deg = np.random.randint(-12, 12)
-    image = ST.rotate(image, angle=rotate_deg, center=(0, 0))
+    image = ST.rotate(image, angle=rotate_deg, center=(h / 2, w / 2))
     for i in range(len(keypoints)):
         point = keypoints[i]
-        qx, qy = rotate(point, (0, 0), -rotate_deg)
-        keypoints[i][0] = qx
-        keypoints[i][1] = qy
+        x, y = point[0] * w, point[1] * h
+        qx, qy = rotate(point=(x, y), origin=(h / 2, w / 2), angle=-rotate_deg)
+        keypoints[i][0] = qx / w
+        keypoints[i][1] = qy / h
 
     # convert back to tensors
     image = torch.from_numpy(image)
