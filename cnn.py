@@ -1,14 +1,7 @@
 # Convolutional Neural Networks
-import torchvision
 import torch
-from torch.nn import (
-    Conv2d,
-    Flatten,
-    Linear,
-    MaxPool2d,
-    Module,
-    ReLU,
-)
+import torchvision
+from torch.nn import Conv2d, Flatten, Linear, MaxPool2d, Module, ReLU
 
 
 class NoseFinder(Module):

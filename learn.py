@@ -3,6 +3,7 @@ import torch.nn.functional as F
 from torch.optim import Adam
 from tqdm.contrib import tenumerate
 
+import dataloader
 from constants import DEVICE
 from display import show_keypoints
 
@@ -22,6 +23,7 @@ def train(train_loader, model, learning_rate):
 
         # predict keypoints with current model
         pred_keypts = model(batched_imgs)
+        dataloader.assert_points(pred_keypts)
 
         # Compute loss
         loss = loss_fn(pred_keypts, batched_keypts)

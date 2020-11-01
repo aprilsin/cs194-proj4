@@ -8,12 +8,7 @@ import numpy as np
 import skimage.io as io
 from skimage.util import img_as_float
 
-from constants import (
-    Array,
-    List,
-    img,
-)
-
+from constants import Array, List, img
 
 #
 # IMAGE ARRAYS

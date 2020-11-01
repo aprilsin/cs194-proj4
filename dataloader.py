@@ -4,13 +4,7 @@ import math
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import (
-    Callable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-)
+from typing import Callable, List, Optional, Sequence, Tuple
 
 import numpy as np
 import skimage.transform as ST
@@ -39,6 +33,7 @@ def assert_img(img):
     assert isinstance(img, Tensor), type(img)
     assert img.ndim == 3, img.shape
     assert list(img.shape)[0] == 1, f"{img.shape} is not grayscale"
+    assert all(x > 0 for x in list(img.shape)), img.shape
     return True
 
 
@@ -211,6 +206,7 @@ class XmlSample:
     def load_img(self):
         # load image from file
         img_name = self.root / self.file.attrib["file"]
+        print(img_name)
         img = load_img(img_name)
         assert_img(img)
         return img
@@ -238,6 +234,15 @@ class XmlSample:
             left -= col_shift
             height = int(round(height * self.hr))
             width = int(round(width * self.wr))
+
+        # make sure there's no negative indices
+        if top <= 0:
+            height -= abs(top)
+            top = 0
+        if left <= 0:
+            width -= abs(left)
+            left = 0
+
         return top, left, height, width
 
     def get_original_pts(self, pts: Tensor) -> Tensor:
@@ -303,7 +308,7 @@ class LargeDataset(Dataset):  # loads xml files
         self.samples = []
         for f in all_files:
             sample = sample_class(
-                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1.4, wr=1.2
+                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1, wr=1
             )
             self.samples.append(sample)
 
@@ -348,6 +353,8 @@ class LargeTrainDataset(LargeDataset):  # loads xml files
             height=height,
             width=width,
         )
+        assert_img(img)
+
         # fix keypoints according to crop
         keypts[:, 0] -= left
         keypts[:, 1] -= top
