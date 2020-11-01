@@ -17,21 +17,9 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (
-    Callable,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    NamedTuple,
-    NewType,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
+                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
+from xml.etree import Element
 
 import numpy as np
 import numpy as np
@@ -118,6 +106,59 @@ def load_img(img_file: Path):
     img = pipeline(t)
     assert_img(img)
     return img
+
+
+def load_xml(root_dir: Path, filename: Element) -> Tuple[Tensor, Tensor]:
+
+    img_name = root_dir / filename.attrib["file"]
+    img = load_img(img_name)
+
+    h, w = img.shape[-2:]
+
+    keypts = []
+    for num in range(68):
+        x_coordinate = int(filename[0][num].attrib["x"])
+        y_coordinate = int(filename[0][num].attrib["y"])
+        keypts.append([x_coordinate, y_coordinate])
+    keypts = torch.as_tensor(keypts, dtype=torch.float32)
+
+    # crop image background
+
+    box = filename[0].attrib
+    left, top, width, height = (
+        int(box["left"]),
+        int(box["top"]),
+        int(box["width"]),
+        int(box["height"]),
+    )
+
+    # ratio for adjusting box
+    vr = 1.4
+    hr = 1.2
+    ver_shift = int(round(height * (vr - 1) / 2))
+    hor_shift = int(round(width * (hr - 1) / 2))
+
+    # x, y for the top left corner of the box, w, h for box width and height
+    img = TT.functional.crop(
+        img,
+        top=top - ver_shift,
+        left=left - hor_shift,
+        height=int(round(height * vr)),
+        width=int(round(width * hr)),
+    )
+
+    # fix keypoints according to crop
+    keypts[:, 0] -= left - hor_shift
+    keypts[:, 1] -= top - ver_shift
+
+    # make keypoints ratios
+    h, w = img.shape[-2:]
+    keypts[:, 0] /= w
+    keypts[:, 1] /= h
+
+    assert_img(img)
+    assert_points(keypts)
+    return img, keypts
 
 
 def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
@@ -249,53 +290,7 @@ class LargeDataset(Dataset):
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
 
         filename = self.files[idx]
-
-        img_name = self.root_dir / filename.attrib["file"]
-        img = load_img(img_name)
-
-        h, w = img.shape[-2:]
-
-        keypts = []
-        for num in range(68):
-            x_coordinate = int(filename[0][num].attrib["x"])
-            y_coordinate = int(filename[0][num].attrib["y"])
-            keypts.append([x_coordinate, y_coordinate])
-        keypts = torch.as_tensor(keypts, dtype=torch.float32)
-
-        # crop image background
-
-        box = filename[0].attrib
-        left, top, width, height = (
-            int(box["left"]),
-            int(box["top"]),
-            int(box["width"]),
-            int(box["height"]),
-        )
-
-        # ratio for adjusting box
-        vr = 1.4
-        hr = 1.2
-        ver_shift = int(round(height * (vr - 1) / 2))
-        hor_shift = int(round(width * (hr - 1) / 2))
-
-        # x, y for the top left corner of the box, w, h for box width and height
-        img = TT.functional.crop(
-            img,
-            top=top - ver_shift,
-            left=left - hor_shift,
-            height=int(round(height * vr)),
-            width=int(round(width * hr)),
-        )
-
-        # fix keypoints according to crop
-        keypts[:, 0] -= left - hor_shift
-        keypts[:, 1] -= top - ver_shift
-
-        # make keypoints ratios
-        h, w = img.shape[-2:]
-        keypts[:, 0] /= w
-        keypts[:, 1] /= h
-
+        img, keypts = load_xml(self.root_dir, filename)
         assert_img(img)
         assert_points(keypts)
         return img, keypts
