@@ -305,8 +305,9 @@ class LargeTestDataset(LargeDataset):  # loads xml files
     ) -> None:
         super().__init__(data_dir, xml_file, XmlTestSample, transform)
 
-
-def to_panda(filename, keypts: Tensor):
+def get_id(filename: ET.Element):
+    
+def to_panda(filename: ET.Element, keypts: Tensor):
     return True
 
 

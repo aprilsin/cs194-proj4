@@ -31,7 +31,7 @@ def rotate(point, origin, angle):
 
 def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
 
-    transform = TT.Compose([TT.Resize(240, 320), TT.Grayscale()])
+    transform = TT.Compose([TT.Resize((240, 320)), TT.Grayscale()])
     image = transform(image)
 
     assert_img(image)
