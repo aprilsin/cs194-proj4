@@ -7,10 +7,7 @@ import torch
 import torchvision.transforms as TT
 from torch import Tensor
 
-from my_types import (
-    assert_img,
-    assert_points,
-)
+from my_types import assert_img, assert_points
 
 
 def rotate(point, origin, angle):
