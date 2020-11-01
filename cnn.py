@@ -1,9 +1,14 @@
 # Convolutional Neural Networks
 
 import torch
-import torch.nn.functional as F
-from torch.nn import (Conv2d, Flatten, Identity, Linear, MaxPool2d, Module,
-                      ReLU, Sequential)
+from torch.nn import (
+    Conv2d,
+    Flatten,
+    Linear,
+    MaxPool2d,
+    Module,
+    ReLU,
+)
 
 
 class NoseFinder(Module):
@@ -11,9 +16,9 @@ class NoseFinder(Module):
         super().__init__()
 
         # formula: (N - F) / stride + 1
-        self.C1 = Conv2d(1, 24, 3) # Conv2d(1, 15, 3)
-        self.C2 = Conv2d(24, 30, 3) # Conv2d(15, 28, 3)
-        self.C3 = Conv2d(30, 20, 3) # Conv2d(28, 20, 3)
+        self.C1 = Conv2d(1, 24, 3)  # Conv2d(1, 15, 3)
+        self.C2 = Conv2d(24, 30, 3)  # Conv2d(15, 28, 3)
+        self.C3 = Conv2d(30, 20, 3)  # Conv2d(28, 20, 3)
         # self.C4 = Conv2d(30, 20, 3)
 
         self.FC1 = Linear(20 * 7 * 10, 128)
@@ -60,7 +65,7 @@ class NoseFinder(Module):
         # print(x.shape)
 
         x = self.FC2(x)
-        # x=torch.sigmoid(x)
+        x = torch.sigmoid(x)
         x = x.reshape(-1, 1, 2)
         # print("FC2: ", x.shape)
 
@@ -128,6 +133,7 @@ class FaceFinder(Module):
         x = r(x)
 
         x = self.FC2(x)
+        x = torch.sigmoid(x)
         x = x.reshape(-1, 58, 2)
         # print("FC2: ", x.shape)
 
@@ -136,5 +142,6 @@ class FaceFinder(Module):
 
 def ResNet():
     import torchvision.models as models
+
     model = models.resnet18()
     print(model.parameters)

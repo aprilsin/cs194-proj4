@@ -2,8 +2,8 @@ from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
 from torch import Tensor
+
 
 ToDisplayImage = Union[Tensor, np.ndarray]
 
@@ -13,7 +13,7 @@ def to_display_img(img: ToDisplayImage, color=False) -> np.ndarray:
         return img
 
     assert isinstance(img, Tensor), type(img)
-
+    img = img.detach().cpu()
     if img.ndim == 2:
         return img.numpy()
 
@@ -24,9 +24,8 @@ def to_display_img(img: ToDisplayImage, color=False) -> np.ndarray:
 
         if not color:
             # remove dimension of size 1 for plt
-            img = torch.squeeze(img)
-            img = torch.detach(img).numpy()
-        return img
+            img = img.squeeze()
+        return img.numpy()
 
     else:
         raise ValueError(type(img), img.shape)
@@ -41,6 +40,7 @@ def to_display_pts(pts: ToDisplayPoints) -> np.ndarray:
     if isinstance(pts, np.ndarray):
         assert pts.ndim == 2, pts.shape
         return pts
+    pts = pts.detach().cpu()
 
     assert isinstance(pts, Tensor), type(pts)
     # if pts.numel() == 0:
@@ -48,13 +48,12 @@ def to_display_pts(pts: ToDisplayPoints) -> np.ndarray:
 
     if pts.ndim == 2:
         assert list(pts.shape)[1] == 2
-        pts = torch.detach(pts).numpy()
+        pts = pts.numpy()
         return pts
     if pts.ndim == 3:
         # remove dimension of size 1 for plt
-        pts = torch.squeeze(pts, 0)
-        pts = torch.detach(pts).numpy()
-        return pts
+        pts = pts.squeeze(0)
+        return pts.numpy()
     else:
         raise ValueError(type(pts), pts.shape)
 
@@ -65,7 +64,7 @@ def show_keypoints(
     pred_points: Union[Tensor, np.ndarray] = None,
     color: bool = False,
 ) -> None:
-    """Show image with keypoints"""
+    """Show image with keypoints."""
 
     # make everything numpy arrays with correct shape
     image = to_display_img(image)

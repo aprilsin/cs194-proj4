@@ -1,5 +1,6 @@
 import numpy as np
 
+
 i = 1  # person index
 j = 1  # viewpoint index
 gender = "m"  # gender

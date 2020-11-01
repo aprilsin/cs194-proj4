@@ -1,54 +1,24 @@
 # This file is for loading images and keypoints customized for the Danes and ibug dataset.
 # data source: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
-import argparse
-import functools
-import itertools
-import logging
 import math
 import os
-import random
-import re
-import shutil
-import subprocess
-import sys
-import typing
 import xml.etree.ElementTree as ET
-from copy import deepcopy
-from functools import reduce
-from logging import debug, info, log
 from pathlib import Path
 from typing import (
     Callable,
-    Dict,
-    FrozenSet,
-    Iterable,
     List,
-    NamedTuple,
-    NewType,
     Optional,
     Sequence,
-    Set,
     Tuple,
-    TypeVar,
-    Union,
 )
 
 import numpy as np
-import numpy as np
-import pandas as pd
 import skimage.transform as ST
 import torch
-import torch.nn.functional as F
 import torchvision
-import torchvision.io as TIO
 import torchvision.transforms as TT
-import torchvision.transforms.functional as TF
-from skimage.util import img_as_float
-from torch import Tensor, distributions, nn, tensor
-from torch.nn import Linear, ReLU, Sequential, Softmax
-from torch.optim import Adam
-from torch.utils.data import DataLoader, Dataset, TensorDataset
-from torchvision import utils
+from torch import Tensor
+from torch.utils.data import Dataset
 
 
 def assert_points(pts):
@@ -152,7 +122,7 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     # convert tensors to numpy arrays to use skimage
     image, keypoints = image.squeeze().numpy(), keypoints.numpy()
     h, w = image.shape
-    center = (h / 2, w / 2)
+    (h / 2, w / 2)
 
     rotate_deg = np.random.randint(-12, 12)
     image = ST.rotate(image, angle=rotate_deg, center=(h / 2, w / 2))
@@ -310,6 +280,7 @@ class XmlTestSample(XmlSample):
         self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
     ):
         super().__init__(root_dir, xml_file, filename, hr, wr)
+
 
 class LargeDataset(Dataset):  # loads xml files
     def __init__(

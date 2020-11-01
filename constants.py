@@ -1,4 +1,6 @@
 """ Global Variables """
+import torch
+
 
 NUM_POINTS = 41
 NUM_CHANNELS = 3
@@ -11,3 +13,5 @@ PAD_MODE = "edge"
 
 DANES_HEIGHT = 480
 DANES_WIDTH = 640
+
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
