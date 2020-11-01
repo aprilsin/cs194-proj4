@@ -9,8 +9,6 @@ import skimage.io as io
 from skimage.util import img_as_float
 from torch import Tensor
 
-from constants import Array, List, img
-
 
 def assert_points(pts):
     assert isinstance(pts, Tensor), type(pts)
