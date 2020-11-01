@@ -17,8 +17,21 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
-                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
+from typing import (
+    Callable,
+    Dict,
+    FrozenSet,
+    Iterable,
+    List,
+    NamedTuple,
+    NewType,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 import numpy as np
@@ -232,6 +245,9 @@ class XmlSample:
         assert_img(img)
         return img
 
+    def load_pts(self):
+        return torch.empty(0)
+
     def get_box(self, adjust=True):
 
         box = self.file[0].attrib
@@ -254,13 +270,22 @@ class XmlSample:
             width = int(round(width * self.wr))
         return top, left, height, width
 
-        def get_sample(self):
-            img = torch.empty(224, 224)
-            keypts = torch.empty(68, 2)
-            # TODO fix assertions so it works with empty tensors
-            # assert_img(img)
-            # assert_points(keypts)
-            return img, keypts
+    def get_original_pts(self, pts: Tensor) -> Tensor:
+        assert_points(pts)
+
+        # revert ratios keypoints to actual coordinates
+        img = self.load_img()
+        h, w = img.shape[-2:]
+        pts[:, 0] *= w
+        pts[:, 1] *= h
+
+        # fix keypoints according to crop
+        top, left, height, width = self.get_box()
+        pts[:, 0] += left
+        pts[:, 1] += top
+
+        assert_points(pts)
+        return pts
 
 
 class XmlTrainSample(XmlSample):
@@ -279,76 +304,12 @@ class XmlTrainSample(XmlSample):
         keypts = torch.as_tensor(keypts, dtype=torch.float32)
         return keypts
 
-    def get_sample(self):
-        img = self.load_img()
-        keypts = self.load_pts()
-
-        top, left, height, width = self.get_box()
-        img = TT.functional.crop(
-            img,
-            top=top,
-            left=left,
-            height=height,
-            width=width,
-        )
-
-        # fix keypoints according to crop
-        keypts[:, 0] -= left
-        keypts[:, 1] -= top
-
-        # make keypoints ratios
-        h, w = img.shape[-2:]
-        keypts[:, 0] /= w
-        keypts[:, 1] /= h
-
-        # resize to 224x224
-        img = TT.Resize((224, 224))(img)
-
-        assert_img(img)
-        assert_points(keypts)
-        return img, keypts
-
-    def get_original_pts(self, pts: Tensor) -> Tensor:
-        assert_points(pts)
-
-        # revert ratios keypoints to actual coordinates
-        img = self.load_img()
-        h, w = img.shape[-2:]
-        pts[:, 0] *= w
-        pts[:, 1] *= h
-
-        # fix keypoints according to crop
-        top, left, height, width = self.get_box()
-        pts[:, 0] += left
-        pts[:, 1] += top
-
-        assert_points(pts)
-        return pts
-
 
 class XmlTestSample(XmlSample):
     def __init__(
         self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
     ):
         super().__init__(root_dir, xml_file, filename, hr, wr)
-
-    def get_original_pts(self, pts: Tensor) -> Tensor:
-        assert_points(pts)
-
-        # revert ratios keypoints to actual coordinates
-        img = self.load_img()
-        h, w = img.shape[-2:]
-        pts[:, 0] *= w
-        pts[:, 1] *= h
-
-        # fix keypoints according to crop
-        top, left, height, width = self.get_box()
-        pts[:, 0] += left
-        pts[:, 1] += top
-
-        assert_points(pts)
-        return pts
-
 
 class LargeDataset(Dataset):  # loads xml files
     def __init__(
@@ -376,11 +337,21 @@ class LargeDataset(Dataset):  # loads xml files
             self.samples.append(sample)
 
     def __len__(self):
-        return len(self.samples)  # should be 6666
+        return len(self.samples)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+
         sample = self.samples[idx]
-        return sample.get_sample()
+
+        img = sample.load_img()
+        keypts = sample.load_pts()
+
+        if self.transform is not None:
+            img, keypts = self.transform(img, keypts)
+
+        # assert_img(img)
+        # assert_points(keypts)
+        return img, keypts
 
 
 class LargeTrainDataset(LargeDataset):  # loads xml files
@@ -390,14 +361,41 @@ class LargeTrainDataset(LargeDataset):  # loads xml files
         xml_file: Path,
         transform: Optional[Callable] = None,
     ) -> None:
-        super().__init__(data_dir, xml_file, transform)
-
-    def __len__(self):
-        return len(self.samples)  # should be 6666
+        super().__init__(data_dir, xml_file, XmlTrainSample, transform)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         sample = self.samples[idx]
-        return sample.get_train_sample()
+        img = sample.load_img()
+        keypts = sample.load_pts()
+
+        # crop image
+        top, left, height, width = sample.get_box()
+        img = TT.functional.crop(
+            img,
+            top=top,
+            left=left,
+            height=height,
+            width=width,
+        )
+        # fix keypoints according to crop
+        keypts[:, 0] -= left
+        keypts[:, 1] -= top
+
+        # make keypoints ratios
+        h, w = img.shape[-2:]
+        keypts[:, 0] /= w
+        keypts[:, 1] /= h
+
+        # resize to 224x224
+        img = TT.Resize((224, 224))(img)
+
+        if self.transform is not None:
+            img, keypts = self.transform(img, keypts)
+
+        assert_img(img)
+        assert_points(keypts)
+
+        return img, keypts
 
 
 class LargeTestDataset(LargeDataset):  # loads xml files
@@ -407,25 +405,28 @@ class LargeTestDataset(LargeDataset):  # loads xml files
         xml_file: Path,
         transform: Optional[Callable] = None,
     ) -> None:
-        super().__init__(data_dir, xml_file, transform)
-
-    def __len__(self):
-        return len(self.samples)  # should be 6666
-
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-        sample = self.samples[idx]
-        # TODO check empty Tensor
-        return sample.load_img(), torch.empty(0)  # there are no keypoints in test set
+        super().__init__(data_dir, xml_file, XmlTestSample, transform)
 
 
 def to_panda(filename, keypts: Tensor):
     return True
 
 
-def save_kaggle(keypts: Tensor) -> bool:
-    # TODO
+def save_kaggle(keypts1008: List) -> bool:
     """
     Saves predicted keypoints of Part 3 test set as a csv file
-    """
 
+    keypts1008: List of 1008 tensors.
+        Each tensor contains the 68 predicted keypoints of a test sample.
+        Each tensor is of shape (68, 2).
+
+    """
+    # TODO
+
+    assert len(keypts1008) == 1008
+    assert all(assert_points(keypts) for keypts in keypts1008)
+    all_pts = keypts1008
+    all_pds = []
+    for keypts in all_pts:
+        all_pds.append(to_panda(keypts))
     return True
