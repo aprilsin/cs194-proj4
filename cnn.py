@@ -1,5 +1,5 @@
 # Convolutional Neural Networks
-
+import torchvision
 import torch
 from torch.nn import (
     Conv2d,
@@ -140,8 +140,15 @@ class FaceFinder(Module):
         return x
 
 
-def ResNet():
-    import torchvision.models as models
+class ResNet(Module):
+    def __init__(self):
+        super().__init__()
 
-    model = models.resnet18()
-    print(model.parameters)
+        self.model = torchvision.models.resnet18()
+        self.model.conv1.in_channels = 1
+        self.model.fc.out_features = 68 * 2
+
+    def forward(self, x):
+        x = self.model(x)
+        x = torch.sigmoid(x)
+        return x
