@@ -193,8 +193,8 @@ class XmlTrainSample(XmlSample):
         # load keypoints from file
         keypts = []
         for num in range(68):
-            x_coordinate = int(self.file[0][num].attrib["x"])
-            y_coordinate = int(self.file[0][num].attrib["y"])
+            x_coordinate = int(self.filename[0][num].attrib["x"])
+            y_coordinate = int(self.filename[0][num].attrib["y"])
             keypts.append([x_coordinate, y_coordinate])
         keypts = torch.as_tensor(keypts, dtype=torch.float32)
         return keypts
@@ -306,8 +306,9 @@ class LargeTestDataset(LargeDataset):  # loads xml files
         super().__init__(data_dir, xml_file, XmlTestSample, transform)
 
 def get_id(filename: ET.Element):
-    pass
-
+    img_name = filename.attrib["file"]
+    return img_name
+    
 def to_panda(filename: ET.Element, keypts: Tensor):
     return True
 
