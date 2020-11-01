@@ -257,7 +257,7 @@ class XmlSample:
 
 class XmlTrainSample(XmlSample):
     def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr=1.4, wr=1.2
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr:int, wr:int
     ):
         super().__init__(root_dir, xml_file, filename, hr, wr)
 
@@ -320,7 +320,7 @@ class XmlTrainSample(XmlSample):
 
 class XmlTestSample(XmlSample):
     def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr=1.4, wr=1.2
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr:int, wr:int
     ):
         super().__init__(root_dir, xml_file, filename, hr, wr)
 
@@ -389,7 +389,7 @@ class LargeTrainDataset(LargeDataset):  # loads xml files
         # initialize all samples in dataset as XmlSample
         self.samples = []
         for f in all_files:
-            sample = XmlTestSample(
+            sample = XmlTrainSample(
                 root_dir=data_dir, xml_file=self.xml, filename=f, hr=1, wr=1
             )
             self.samples.append(sample)
@@ -429,7 +429,8 @@ class LargeTestDataset(LargeDataset):  # loads xml files
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         sample = self.samples[idx]
-        return sample.get_train_sample()
+        # TODO check empty Tensor
+        return sample.load_img(), torch.empty(0) # there are no keypoints in test set
 
 
 def to_panda(filename, keypts: Tensor):
