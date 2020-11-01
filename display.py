@@ -31,6 +31,7 @@ def to_display_img(img: ToDisplayImage, color=False) -> np.ndarray:
     else:
         raise ValueError(type(img), img.shape)
 
+
 ToDisplayPoints = Union[Tensor, np.ndarray]
 
 
@@ -42,6 +43,9 @@ def to_display_pts(pts: ToDisplayPoints) -> np.ndarray:
         return pts
 
     assert isinstance(pts, Tensor), type(pts)
+    # if pts.numel() == 0:
+    #     return pts
+
     if pts.ndim == 2:
         assert list(pts.shape)[1] == 2
         pts = torch.detach(pts).numpy()
@@ -57,9 +61,9 @@ def to_display_pts(pts: ToDisplayPoints) -> np.ndarray:
 
 def show_keypoints(
     image: ToDisplayImage,
-    truth_points: Union[Tensor, np.ndarray],
+    truth_points: Union[Tensor, np.ndarray] = None,
     pred_points: Union[Tensor, np.ndarray] = None,
-    color:bool= False
+    color: bool = False,
 ) -> None:
     """Show image with keypoints"""
 
@@ -67,8 +71,9 @@ def show_keypoints(
     image = to_display_img(image)
     assert image.ndim == 2 or image.ndim == 3, image.shape
 
-    truth_points = to_display_pts(truth_points)
-    assert truth_points.ndim == 2 and truth_points.shape[1] == 2, truth_points.shape
+    if truth_points is not None:
+        truth_points = to_display_pts(truth_points)
+        assert truth_points.ndim == 2 and truth_points.shape[1] == 2, truth_points.shape
 
     if pred_points is not None:
         pred_points = to_display_pts(pred_points)
@@ -80,7 +85,10 @@ def show_keypoints(
     plt.figure()
     cmap = "viridis" if color else "gray"
     plt.imshow(image, cmap)
-    plt.scatter(truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x")
+    if truth_points is not None:
+        plt.scatter(
+            truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x"
+        )
     if pred_points is not None:
         plt.scatter(
             pred_points[:, 0] * w, pred_points[:, 1] * h, s=35, c="r", marker="x"
