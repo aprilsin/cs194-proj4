@@ -17,21 +17,8 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (
-    Callable,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    NamedTuple,
-    NewType,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
+                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
 
 import numpy as np
 import numpy as np
