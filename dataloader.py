@@ -1,4 +1,4 @@
-# This file is for loading images and keypoints customized for the Danes dataset.
+# This file is for loading images and keypoints customized for the Danes and ibug dataset.
 # data source: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
 import argparse
 import functools
@@ -36,12 +36,6 @@ from torch.nn import Linear, ReLU, Sequential, Softmax
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import utils
-
-DATA_DIR = Path("data")
-DANES_ROOT = DATA_DIR / Path("imm_face_db")
-# IBUG_ROOT = DATA_DIR / Path("ibug_300W_large_face_landmark_dataset")
-# assert DANES_ROOT.exists()
-# assert IBUG_ROOT.exists()
 
 
 def assert_points(pts):
@@ -220,7 +214,7 @@ class FaceKeypointsDataset(Dataset):
     def __init__(
         self,
         idxs: Sequence[int],
-        root_dir: Path = DANES_ROOT,
+        root_dir: Path,
         transform: Optional[Callable] = None,
     ) -> None:
         self.root_dir = root_dir
@@ -256,7 +250,7 @@ class NoseKeypointDataset(FaceKeypointsDataset):
     def __init__(
         self,
         idxs: Sequence[int],
-        root_dir: Path = DANES_ROOT,
+        root_dir: Path,
         transform: Optional[Callable] = None,
     ) -> None:
         super().__init__(idxs, root_dir, transform)
@@ -297,6 +291,5 @@ def save_kaggle(keypoints):
     # TODO
     """
     Saves predicted keypoints of Part 3 test set as a csv file
-    test set source = https://inst.eecs.berkeley.edu/~cs194-26/fa20/hw/proj4/labels_ibug_300W_test_parsed.xml
     """
     pass
