@@ -17,8 +17,21 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
-                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
+from typing import (
+    Callable,
+    Dict,
+    FrozenSet,
+    Iterable,
+    List,
+    NamedTuple,
+    NewType,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 import numpy as np
@@ -234,7 +247,6 @@ class LargeDataset(Dataset):
         return self.len  # should be 6666
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-        # TODO add augmentations with if random.random()<THRESHOLD
 
         filename = self.files[idx]
 
@@ -262,7 +274,7 @@ class LargeDataset(Dataset):
 
         # ratio for adjusting box
         vr = 1.4
-        hr = 1.1
+        hr = 1.2
         ver_shift = int(round(height * (vr - 1) / 2))
         hor_shift = int(round(width * (hr - 1) / 2))
 
@@ -275,11 +287,24 @@ class LargeDataset(Dataset):
             width=int(round(width * hr)),
         )
 
+        # fix keypoints according to crop
         keypts[:, 0] -= left - hor_shift
         keypts[:, 1] -= top - ver_shift
+
+        # make keypoints ratios
         h, w = img.shape[-2:]
         keypts[:, 0] /= w
         keypts[:, 1] /= h
+
         assert_img(img)
         assert_points(keypts)
         return img, keypts
+
+
+def save_kaggle(keypoints):
+    # TODO
+    """
+    Saves predicted keypoints of Part 3 test set as a csv file
+    test set source = https://inst.eecs.berkeley.edu/~cs194-26/fa20/hw/proj4/labels_ibug_300W_test_parsed.xml
+    """
+    pass
