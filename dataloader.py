@@ -17,8 +17,21 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
-                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
+from typing import (
+    Callable,
+    Dict,
+    FrozenSet,
+    Iterable,
+    List,
+    NamedTuple,
+    NewType,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import numpy as np
 import numpy as np
@@ -102,60 +115,19 @@ def load_img(img_file: Path):
     return img
 
 
-def load_xml(root_dir: Path, filename: ET.Element) -> Tuple[Tensor, Tensor]:
+def rotate(point, origin, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
 
-    img_name = root_dir / filename.attrib["file"]
-    img = load_img(img_name)
+    The angle should be given in degrees.
+    """
+    angle = np.radians(angle)
+    ox, oy = origin
+    px, py = point
 
-    h, w = img.shape[-2:]
-
-    keypts = []
-    for num in range(68):
-        x_coordinate = int(filename[0][num].attrib["x"])
-        y_coordinate = int(filename[0][num].attrib["y"])
-        keypts.append([x_coordinate, y_coordinate])
-    keypts = torch.as_tensor(keypts, dtype=torch.float32)
-
-    # crop image background
-
-    box = filename[0].attrib
-    left, top, width, height = (
-        int(box["left"]),
-        int(box["top"]),
-        int(box["width"]),
-        int(box["height"]),
-    )
-
-    # ratio for adjusting box
-    vr = 1.4
-    hr = 1.2
-    ver_shift = int(round(height * (vr - 1) / 2))
-    hor_shift = int(round(width * (hr - 1) / 2))
-
-    # x, y for the top left corner of the box, w, h for box width and height
-    img = TT.functional.crop(
-        img,
-        top=top - ver_shift,
-        left=left - hor_shift,
-        height=int(round(height * vr)),
-        width=int(round(width * hr)),
-    )
-
-    # fix keypoints according to crop
-    keypts[:, 0] -= left - hor_shift
-    keypts[:, 1] -= top - ver_shift
-
-    # make keypoints ratios
-    h, w = img.shape[-2:]
-    keypts[:, 0] /= w
-    keypts[:, 1] /= h
-
-    # resize to 224x224
-    img = TT.Resize((224, 224))(img)
-
-    assert_img(img)
-    assert_points(keypts)
-    return img, keypts
+    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+    return qx, qy
 
 
 def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
@@ -196,22 +168,10 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
     image = torch.unsqueeze(image, 0)
     keypoints = torch.from_numpy(keypoints)
     # print(image.shape, keypoints.shape)
+
+    assert_img(image)
+    assert_points(keypoints)
     return image, keypoints
-
-
-def rotate(point, origin, angle):
-    """
-    Rotate a point counterclockwise by a given angle around a given origin.
-
-    The angle should be given in degrees.
-    """
-    angle = np.radians(angle)
-    ox, oy = origin
-    px, py = point
-
-    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
-    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
-    return qx, qy
 
 
 class FaceKeypointsDataset(Dataset):
@@ -269,34 +229,123 @@ class NoseKeypointDataset(FaceKeypointsDataset):
         return img, nose_point
 
 
-class LargeDataset(Dataset):
+class XmlSample:
     def __init__(
-        self,
-        xml_name: str,
-        root_dir: Path,
-        transform: Optional[Callable] = None,
-    ) -> None:
-        self.xml = root_dir / Path(xml_name)
-        self.root_dir = root_dir
-        tree = ET.parse(self.xml)
-        self.files = tree.getroot()[2]  # should be 6666
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr=1.4, wr=1.2
+    ):
+        self.root = root_dir
+        self.source = xml_file
+        self.file = filename
+        self.hr, self.wr = hr, wr
 
-    def __len__(self):
-        return len(self.files)  # should be 6666
+    def load_img(self):
+        # load image from file
+        img_name = self.root / self.file.attrib["file"]
+        img = load_img(img_name)
+        assert_img(img)
+        return img
 
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+    def load_pts(self):
+        # load keypoints from file
+        keypts = []
+        for num in range(68):
+            x_coordinate = int(self.file[0][num].attrib["x"])
+            y_coordinate = int(self.file[0][num].attrib["y"])
+            keypts.append([x_coordinate, y_coordinate])
+        keypts = torch.as_tensor(keypts, dtype=torch.float32)
+        return keypts
 
-        filename = self.files[idx]
-        img, keypts = load_xml(self.root_dir, filename)
+    def get_box(self, adjust=True):
+
+        box = self.file[0].attrib
+        left, top, width, height = (
+            int(box["left"]),
+            int(box["top"]),
+            int(box["width"]),
+            int(box["height"]),
+        )
+
+        # ratio for adjusting box
+        row_shift = int(round(height * (self.hr - 1) / 2))
+        col_shift = int(round(width * (self.wr - 1) / 2))
+
+        # x, y for the top left corner of the box, w, h for box width and height
+        if adjust:
+            top -= row_shift
+            left -= col_shift
+            height = int(round(height * self.hr))
+            width = int(round(width * self.wr))
+        return top, left, height, width
+
+    def get_train_sample(self):
+
+        img = self.load_img()
+        keypts = self.load_pts()
+
+        top, left, height, width = self.get_box()
+        img = TT.functional.crop(
+            img,
+            top=top,
+            left=left,
+            height=height,
+            width=width,
+        )
+
+        # fix keypoints according to crop
+        keypts[:, 0] -= left
+        keypts[:, 1] -= top
+
+        # make keypoints ratios
+        h, w = img.shape[-2:]
+        keypts[:, 0] /= w
+        keypts[:, 1] /= h
+
+        # resize to 224x224
+        img = TT.Resize((224, 224))(img)
+
         assert_img(img)
         assert_points(keypts)
         return img, keypts
+
+    def get_pred_keypts_on_original(self, pred_keypts):
+        pass
+
+
+class LargeDataset(Dataset):  # loads xml files
+    def __init__(
+        self,
+        data_dir: Path,
+        xml_file: Path,
+        transform: Optional[Callable] = None,
+    ) -> None:
+
+        self.data_dir = data_dir
+        self.xml = xml_file
+
+        tree = ET.parse(self.xml)
+        all_files = tree.getroot()[2]
+
+        # initialize all samples in dataset as XmlSample
+        self.samples = []
+        for f in all_files:
+            sample = XmlSample(
+                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1, wr=1
+            )
+            self.samples.append(sample)
+
+    def __len__(self):
+        return len(self.samples)  # should be 6666
+
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        sample = self.samples[idx]
+        return sample.get_train_sample()
 
 
 def to_panda(filename, keypts: Tensor):
     return True
 
-def save_kaggle(keypts: Tensor)->bool:
+
+def save_kaggle(keypts: Tensor) -> bool:
     # TODO
     """
     Saves predicted keypoints of Part 3 test set as a csv file
