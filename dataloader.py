@@ -60,8 +60,6 @@ def load_img(img_file: Path):
     return img
 
 
-
-
 class FaceKeypointsDataset(Dataset):
     def __init__(
         self,
@@ -123,12 +121,12 @@ class XmlSample:
     ):
         self.root = root_dir
         self.source = xml_file
-        self.file = filename
+        self.filename = filename
         self.hr, self.wr = hr, wr
 
     def load_img(self):
         # load image from file
-        img_name = self.root / self.file.attrib["file"]
+        img_name = self.root / self.filename.attrib["file"]
         img = load_img(img_name)
         assert_img(img)
         return img
@@ -138,7 +136,7 @@ class XmlSample:
 
     def get_box(self, adjust=True):
 
-        box = self.file[0].attrib
+        box = self.filename[0].attrib
         left, top, width, height = (
             int(box["left"]),
             int(box["top"]),
@@ -240,7 +238,7 @@ class LargeDataset(Dataset):  # loads xml files
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
 
         sample = self.samples[idx]
-
+        filename = sample.filename
         img = sample.load_img()
         keypts = sample.load_pts()
 
@@ -249,7 +247,7 @@ class LargeDataset(Dataset):  # loads xml files
 
         # assert_img(img)
         # assert_points(keypts)
-        return img, keypts
+        return img, keypts  # , filename
 
 
 class LargeTrainDataset(LargeDataset):  # loads xml files
