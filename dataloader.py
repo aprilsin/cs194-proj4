@@ -150,6 +150,9 @@ def load_xml(root_dir: Path, filename: ET.Element) -> Tuple[Tensor, Tensor]:
     keypts[:, 0] /= w
     keypts[:, 1] /= h
 
+    # resize to 224x224
+    img = TT.Resize((224, 224))(img)
+
     assert_img(img)
     assert_points(keypts)
     return img, keypts
@@ -290,9 +293,14 @@ class LargeDataset(Dataset):
         return img, keypts
 
 
-def save_kaggle(keypoints):
+def to_panda(filename, keypts: Tensor):
+    return True
+
+def save_kaggle(keypts: Tensor)->bool:
     # TODO
     """
     Saves predicted keypoints of Part 3 test set as a csv file
     """
-    pass
+    TOTAL_ROWS = 137088
+
+    return True
