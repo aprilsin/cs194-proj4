@@ -17,21 +17,8 @@ from copy import deepcopy
 from functools import reduce
 from logging import debug, info, log
 from pathlib import Path
-from typing import (
-    Callable,
-    Dict,
-    FrozenSet,
-    Iterable,
-    List,
-    NamedTuple,
-    NewType,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import (Callable, Dict, FrozenSet, Iterable, List, NamedTuple,
+                    NewType, Optional, Sequence, Set, Tuple, TypeVar, Union)
 
 import numpy as np
 import numpy as np
@@ -245,16 +232,6 @@ class XmlSample:
         assert_img(img)
         return img
 
-    def load_pts(self):
-        # load keypoints from file
-        keypts = []
-        for num in range(68):
-            x_coordinate = int(self.file[0][num].attrib["x"])
-            y_coordinate = int(self.file[0][num].attrib["y"])
-            keypts.append([x_coordinate, y_coordinate])
-        keypts = torch.as_tensor(keypts, dtype=torch.float32)
-        return keypts
-
     def get_box(self, adjust=True):
 
         box = self.file[0].attrib
@@ -277,8 +254,24 @@ class XmlSample:
             width = int(round(width * self.wr))
         return top, left, height, width
 
-    def get_train_sample(self):
 
+class XmlTrainSample(XmlSample):
+    def __init__(
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr=1.4, wr=1.2
+    ):
+        super().__init__(root_dir, xml_file, filename, hr, wr)
+
+    def load_pts(self):
+        # load keypoints from file
+        keypts = []
+        for num in range(68):
+            x_coordinate = int(self.file[0][num].attrib["x"])
+            y_coordinate = int(self.file[0][num].attrib["y"])
+            keypts.append([x_coordinate, y_coordinate])
+        keypts = torch.as_tensor(keypts, dtype=torch.float32)
+        return keypts
+
+    def get_train_sample(self):
         img = self.load_img()
         keypts = self.load_pts()
 
@@ -307,8 +300,46 @@ class XmlSample:
         assert_points(keypts)
         return img, keypts
 
-    def get_pred_keypts_on_original(self, pred_keypts):
-        pass
+    def get_original_pts(self, pts: Tensor) -> Tensor:
+        assert_points(pts)
+
+        # revert ratios keypoints to actual coordinates
+        img = self.load_img()
+        h, w = img.shape[-2:]
+        pts[:, 0] *= w
+        pts[:, 1] *= h
+
+        # fix keypoints according to crop
+        top, left, height, width = self.get_box()
+        pts[:, 0] += left
+        pts[:, 1] += top
+
+        assert_points(pts)
+        return pts
+
+
+class XmlTestSample(XmlSample):
+    def __init__(
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr=1.4, wr=1.2
+    ):
+        super().__init__(root_dir, xml_file, filename, hr, wr)
+
+    def get_original_pts(self, pts: Tensor) -> Tensor:
+        assert_points(pts)
+
+        # revert ratios keypoints to actual coordinates
+        img = self.load_img()
+        h, w = img.shape[-2:]
+        pts[:, 0] *= w
+        pts[:, 1] *= h
+
+        # fix keypoints according to crop
+        top, left, height, width = self.get_box()
+        pts[:, 0] += left
+        pts[:, 1] += top
+
+        assert_points(pts)
+        return pts
 
 
 class LargeDataset(Dataset):  # loads xml files
@@ -341,6 +372,66 @@ class LargeDataset(Dataset):  # loads xml files
         return sample.get_train_sample()
 
 
+class LargeTrainDataset(LargeDataset):  # loads xml files
+    def __init__(
+        self,
+        data_dir: Path,
+        xml_file: Path,
+        transform: Optional[Callable] = None,
+    ) -> None:
+
+        self.data_dir = data_dir
+        self.xml = xml_file
+
+        tree = ET.parse(self.xml)
+        all_files = tree.getroot()[2]
+
+        # initialize all samples in dataset as XmlSample
+        self.samples = []
+        for f in all_files:
+            sample = XmlTestSample(
+                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1, wr=1
+            )
+            self.samples.append(sample)
+
+    def __len__(self):
+        return len(self.samples)  # should be 6666
+
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        sample = self.samples[idx]
+        return sample.get_train_sample()
+
+
+class LargeTestDataset(LargeDataset):  # loads xml files
+    def __init__(
+        self,
+        data_dir: Path,
+        xml_file: Path,
+        transform: Optional[Callable] = None,
+    ) -> None:
+
+        self.data_dir = data_dir
+        self.xml = xml_file
+
+        tree = ET.parse(self.xml)
+        all_files = tree.getroot()[2]
+
+        # initialize all samples in dataset as XmlSample
+        self.samples = []
+        for f in all_files:
+            sample = XmlTestSample(
+                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1, wr=1
+            )
+            self.samples.append(sample)
+
+    def __len__(self):
+        return len(self.samples)  # should be 6666
+
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        sample = self.samples[idx]
+        return sample.get_train_sample()
+
+
 def to_panda(filename, keypts: Tensor):
     return True
 
@@ -350,6 +441,5 @@ def save_kaggle(keypts: Tensor) -> bool:
     """
     Saves predicted keypoints of Part 3 test set as a csv file
     """
-    TOTAL_ROWS = 137088
 
     return True
