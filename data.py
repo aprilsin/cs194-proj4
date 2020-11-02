@@ -4,21 +4,28 @@ import math
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Callable, List, Optional, Sequence, Tuple
+from typing import (
+    Callable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 import numpy as np
-import numpy as np
-import skimage.transform as ST
 import skimage.transform as ST
 import torch
 import torchvision
-import torchvision.transforms as TT
 import torchvision.transforms as TT
 from PIL import Image
 from torch import Tensor
 from torch.utils.data import Dataset
 
-from my_types import assert_img, assert_points
+from my_types import (
+    assert_img,
+    assert_points,
+)
+
 
 DATA_DIR = Path("data")
 DANES_ROOT = DATA_DIR / Path("imm_face_db")
@@ -30,11 +37,10 @@ assert DANES_ROOT.exists()
 assert IBUG_ROOT.exists()
 
 
-def load_img(img_file: Path):
+def load_img(img_file: Path) -> Tensor:
     t = Image.open((img_file))
     pipeline = TT.Compose(
         [
-            # TT.ToPILImage(),
             TT.ToTensor(),
         ]
     )
@@ -67,20 +73,13 @@ def load_asf(file: os.PathLike) -> Tensor:  # for part 1 and 2
     return points
 
 
-# def load_nose(file: os.PathLike) -> Tensor:
-#     points = load_asf(file)
-#     NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
-#     nose_point = points[NOSE_INDEX].reshape(1, 2)
-#     assert_points(nose_point)
-#     return nose_point
-
-
 #
 # Part 1
 #
 
 
 def part1_transform(image, keypoints) -> Tuple[Tensor, Tensor]:
+    # hardcoded
     out_h, out_w = 240, 320
     image = TT.Resize((out_h, out_w))(image)
 
@@ -90,23 +89,22 @@ def part1_transform(image, keypoints) -> Tuple[Tensor, Tensor]:
 
 
 def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
-    # do nothing
-    return image, keypoints
+
+    return image, keypoints  # do nothing
 
 
 class NoseKeypointTrainDataset(Dataset):
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__()
         # Use all 6 images of the first 32 persons (index 1-32) as the training set
         # (total 32 x 6 = 192 images)
+        root_dir = DANES_ROOT
         idxs = torch.arange(1, 33)
         self.img_files = sorted(
-            f for f in self.root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
         )
         self.asf_files = sorted(
-            f for f in self.root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
         )
         assert len(self.img_files) == len(
             self.asf_files
@@ -116,12 +114,13 @@ class NoseKeypointTrainDataset(Dataset):
         return len(self.img_files)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-        # TODO add augmentations with if random.random()<THRESHOLD
 
         img_name, asf_name = self.img_files[idx], self.asf_files[idx]
         img = load_img(img_name)
         points = load_asf(asf_name)
+
         img, points = part1_transform(img, points)
+        # TODO add augmentations with if random.random()<THRESHOLD
         img, points = part1_augment(img, points)
 
         NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
@@ -133,20 +132,17 @@ class NoseKeypointTrainDataset(Dataset):
 
 
 class NoseKeypointValidDataset(Dataset):
-    def __init__(
-        self,
-        idxs: Sequence[int],
-        root_dir: Path,
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__()
         # Use all 6 images of the first 32 persons (index 1-32) as the training set
         # (total 32 x 6 = 192 images)
         idxs = torch.arange(1, 33)
+        root_dir = DANES_ROOT
         self.img_files = sorted(
-            f for f in self.root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
         )
         self.asf_files = sorted(
-            f for f in self.root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
         )
         assert len(self.img_files) == len(
             self.asf_files
@@ -159,6 +155,7 @@ class NoseKeypointValidDataset(Dataset):
         img_name, asf_name = self.img_files[idx], self.asf_files[idx]
         img = load_img(img_name)
         points = load_asf(asf_name)
+        # no augmentation since we're not training
         img, points = part1_transform(img, points)
 
         NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
@@ -170,19 +167,18 @@ class NoseKeypointValidDataset(Dataset):
 
 
 class NoseKeypointTestDataset(Dataset):  # not used
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
 
         super().__init__()
         # Use images of the remaining 8 persons (index 33-40) as the validation set
         # (total 8 * 6 = 48 images)
         idxs = torch.arange(32, 40)
+        root_dir = DANES_ROOT
         self.img_files = sorted(
-            f for f in self.root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
         )
         self.asf_files = sorted(
-            f for f in self.root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
         )
         assert len(self.img_files) == len(
             self.asf_files
@@ -195,6 +191,7 @@ class NoseKeypointTestDataset(Dataset):  # not used
         img_name, asf_name = self.img_files[idx], self.asf_files[idx]
         img = load_img(img_name)
         points = load_asf(asf_name)
+
         img, points = part1_transform(img, points)
 
         NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
@@ -211,8 +208,7 @@ class NoseKeypointTestDataset(Dataset):  # not used
 
 
 def rotate(point, origin, angle):
-    """
-    Rotate a point counterclockwise by a given angle around a given origin.
+    """Rotate a point counterclockwise by a given angle around a given origin.
 
     The angle should be given in degrees.
     """
@@ -226,6 +222,7 @@ def rotate(point, origin, angle):
 
 
 def part2_transform(image, keypoints) -> Tuple[Tensor, Tensor]:
+    # hardcoded
     out_h, out_w = 240, 320
     image = TT.Resize((out_h, out_w))(image)
 
@@ -242,8 +239,7 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
 
     rotate_deg = np.random.randint(-12, 12)
     image = ST.rotate(image, angle=rotate_deg, center=(h / 2, w / 2))
-    for i in range(len(keypoints)):
-        point = keypoints[i]
+    for i, point in enumerate(keypoints):
         x, y = point[0] * w, point[1] * h
         qx, qy = rotate(point=(x, y), origin=(h / 2, w / 2), angle=-rotate_deg)
         keypoints[i][0] = qx / w
@@ -251,7 +247,7 @@ def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
 
     # convert back to tensors
     image = torch.from_numpy(image)
-    image = torch.unsqueeze(image, 0)
+    image = image.unsqueeze(0)
     keypoints = torch.from_numpy(keypoints)
 
     assert_img(image)
@@ -265,11 +261,12 @@ class FaceKeypointsTrainDataset(Dataset):
         # Use all 6 images of the first 32 persons (index 1-32) as the training set
         # (total 32 x 6 = 192 images)
         idxs = torch.arange(1, 33)
+        root_dir = DANES_ROOT
         self.img_files = sorted(
-            f for f in self.root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
         )
         self.asf_files = sorted(
-            f for f in self.root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
         )
         assert len(self.img_files) == len(
             self.asf_files
@@ -282,6 +279,7 @@ class FaceKeypointsTrainDataset(Dataset):
         img_name, asf_name = self.img_files[idx], self.asf_files[idx]
         img = load_img(img_name)
         points = load_asf(asf_name)
+
         img, points = part2_transform(img, points)
         # TODO add augmentations with if random.random()<THRESHOLD
         img, points = part2_augment(img, points)
@@ -297,11 +295,12 @@ class FaceKeypointsValidDataset(Dataset):  # works the same as training set
         # Use all 6 images of the first 32 persons (index 1-32) as the training set
         # (total 32 x 6 = 192 images)
         idxs = torch.arange(1, 33)
+        root_dir = DANES_ROOT
         self.img_files = sorted(
-            f for f in self.root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
         )
         self.asf_files = sorted(
-            f for f in self.root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
         )
         assert len(self.img_files) == len(
             self.asf_files
@@ -314,6 +313,7 @@ class FaceKeypointsValidDataset(Dataset):  # works the same as training set
         img_name, asf_name = self.img_files[idx], self.asf_files[idx]
         img = load_img(img_name)
         points = load_asf(asf_name)
+
         img, points = part2_transform(img, points)
 
         assert_img(img)
@@ -322,19 +322,19 @@ class FaceKeypointsValidDataset(Dataset):  # works the same as training set
 
 
 class FaceKeypointsTestDataset(Dataset):
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
 
         super().__init__()
         # Use images of the remaining 8 persons (index 33-40) as the validation set
         # (total 8 * 6 = 48 images)
         idxs = torch.arange(32, 40)
+        root_dir = DANES_ROOT
+
         self.img_files = sorted(
-            f for f in self.root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
         )
         self.asf_files = sorted(
-            f for f in self.root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
+            f for f in root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
         )
         assert len(self.img_files) == len(
             self.asf_files
@@ -343,7 +343,7 @@ class FaceKeypointsTestDataset(Dataset):
     def __len__(self):
         return len(self.img_files)
 
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+    def __getitem__(self, idx: int) -> Tensor:
         img_name, asf_name = self.img_files[idx], self.asf_files[idx]
         img = load_img(img_name)
         points = load_asf(asf_name)
@@ -365,12 +365,12 @@ def part3_augment(img, keypts):
 
 class XmlSample:
     def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
+        self, xml_file: Path, filename: ET.Element, height_ratio: int, width_ratio: int
     ):
-        self.root = root_dir
+        self.root = IBUG_ROOT
         self.source = xml_file
         self.filename = filename
-        self.hr, self.wr = hr, wr
+        self.hr, self.wr = height_ratio, width_ratio
 
     def load_img(self):
         # load image from file
@@ -380,7 +380,14 @@ class XmlSample:
         return img
 
     def load_pts(self):
-        raise ValueError("This function should not be called")
+        # load keypoints from file
+        keypts = []
+        for num in range(68):
+            x_coordinate = int(self.filename[0][num].attrib["x"])
+            y_coordinate = int(self.filename[0][num].attrib["y"])
+            keypts.append([x_coordinate, y_coordinate])
+        keypts = torch.as_tensor(keypts, dtype=torch.float32)
+        return keypts
 
     def get_box(self, adjust=True):
 
@@ -423,7 +430,7 @@ class XmlSample:
         pts[:, 1] *= h
 
         # fix keypoints according to crop
-        top, left, height, width = self.get_box()
+        top, left, _, _ = self.get_box()
         pts[:, 0] += left
         pts[:, 1] += top
 
@@ -432,62 +439,29 @@ class XmlSample:
 
 
 class XmlTrainSample(XmlSample):
-    def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
-    ):
-        super().__init__(root_dir, xml_file, filename, hr, wr)
-
-    def load_pts(self):
-        # load keypoints from file
-        keypts = []
-        for num in range(68):
-            x_coordinate = int(self.filename[0][num].attrib["x"])
-            y_coordinate = int(self.filename[0][num].attrib["y"])
-            keypts.append([x_coordinate, y_coordinate])
-        keypts = torch.as_tensor(keypts, dtype=torch.float32)
-        return keypts
+    def __init__(self, filename: ET.Element, hr: float, wr: float):
+        super().__init__(train_xml, filename, hr, wr)
 
 
-class XmlValidSample(XmlSample):  # works exactly the same as XmlTestSample
-    def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
-    ):
-        super().__init__(root_dir, xml_file, filename, hr, wr)
-
-    def load_pts(self):
-        # load keypoints from file
-        keypts = []
-        for num in range(68):
-            x_coordinate = int(self.filename[0][num].attrib["x"])
-            y_coordinate = int(self.filename[0][num].attrib["y"])
-            keypts.append([x_coordinate, y_coordinate])
-        keypts = torch.as_tensor(keypts, dtype=torch.float32)
-        return keypts
+class XmlValidSample(XmlSample):
+    def __init__(self, filename: ET.Element, hr: float, wr: float):
+        super().__init__(train_xml, filename, hr, wr)
 
 
 class XmlTestSample(XmlSample):
-    def __init__(
-        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
-    ):
-        super().__init__(root_dir, xml_file, filename, hr, wr)
+    def __init__(self, filename: ET.Element, hr: float, wr: float):
+        super().__init__(test_xml, filename, hr, wr)
 
 
 class LargeTrainDataset(Dataset):
     def __init__(self) -> None:
         super().__init__()
-        self.root = IBUG_ROOT
-        self.xml = train_xml
 
         tree = ET.parse(self.xml)
         all_files = tree.getroot()[2]
 
         # initialize all samples in dataset as XmlSample
-        self.samples = []
-        for f in all_files:
-            sample = XmlTrainSample(
-                root_dir=self.root, xml_file=self.xml, filename=f, hr=1.4, wr=1.2
-            )
-            self.samples.append(sample)
+        self.samples = [XmlTrainSample(filename=f, hr=1.4, wr=1.2) for f in all_files]
 
     def __len__(self):
         return len(self.samples)
@@ -517,33 +491,29 @@ class LargeTrainDataset(Dataset):
         keypts[:, 0] /= w
         keypts[:, 1] /= h
 
-        # resize to 224x224
-        img = TT.Resize((224, 224))(img)
+        img = part3_transform(img)
 
-        if self.augment is not None:
-            img, keypts = self.augment(img, keypts)
+        # TODO may want to augment randomly
+        img, keypts = part3_augment(img, keypts)
 
         assert_img(img)
         assert_points(keypts)
         return img, keypts
 
 
-class LargeValidDataset(LargeDataset):  # works the same as training set
+def part3_transform(img: Tensor) -> Tensor:
+    # resnet expects input of size 224 x 224
+    return TT.Resize((224, 224))(img)
+
+
+class LargeValidDataset(Dataset):
     def __init__(self) -> None:
         super().__init__()
-        self.root = IBUG_ROOT
-        self.xml = train_xml
 
         tree = ET.parse(self.xml)
         all_files = tree.getroot()[2]
 
-        # initialize all samples in dataset as XmlSample
-        self.samples = []
-        for f in all_files:
-            sample = XmlValidSample(
-                root_dir=self.root, xml_file=self.xml, filename=f, hr=1.4, wr=1.2
-            )
-            self.samples.append(sample)
+        self.samples = [XmlValidSample(filename=f, hr=1.4, wr=1.2) for f in all_files]
 
     def __len__(self):
         return len(self.samples)
@@ -573,33 +543,21 @@ class LargeValidDataset(LargeDataset):  # works the same as training set
         keypts[:, 0] /= w
         keypts[:, 1] /= h
 
-        # resize to 224x224
-        img = TT.Resize((224, 224))(img)
-
-        if self.augment is not None:
-            img, keypts = self.augment(img, keypts)
+        img = part3_transform(img)
 
         assert_img(img)
         assert_points(keypts)
         return img, keypts
 
 
-class LargeTestDataset(LargeDataset):  # works the same as training set
+class LargeTestDataset(Dataset):  # works the same as training set
     def __init__(self) -> None:
         super().__init__()
-        self.root = IBUG_ROOT
-        self.xml = test_xml
 
         tree = ET.parse(self.xml)
         all_files = tree.getroot()[2]
 
-        # initialize all samples in dataset as XmlSample
-        self.samples = []
-        for f in all_files:
-            sample = XmlTestSample(
-                root_dir=self.root, xml_file=self.xml, filename=f, hr=1.4, wr=1.2
-            )
-            self.samples.append(sample)
+        self.samples = [XmlTestSample(filename=f, hr=1.4, wr=1.2) for f in all_files]
 
     def __len__(self):
         return len(self.samples)
@@ -619,29 +577,18 @@ class LargeTestDataset(LargeDataset):  # works the same as training set
         )
         assert_img(img)
 
-        # resize to 224x224
-        img = TT.Resize((224, 224))(img)
+        img = part3_transform(img)
 
         assert_img(img)
         return img
 
 
-# def get_id(filename: ET.Element):
-#     img_name = filename.attrib["file"]
-#     return img_name
-
-# def to_panda(filename: ET.Element, keypts: Tensor):
-#     return True
-
-
 def save_kaggle(keypts1008: List) -> bool:
-    """
-    Saves predicted keypoints of Part 3 test set as a csv file
+    """Saves predicted keypoints of Part 3 test set as a csv file.
 
     keypts1008: List of 1008 tensors.
         Each tensor contains the 68 predicted keypoints of a test sample.
         Each tensor is of shape (68, 2).
-
     """
     # TODO
 
@@ -651,6 +598,6 @@ def save_kaggle(keypts1008: List) -> bool:
     all_pds = []
     for i in range(1008):
         id = i
-        pred_keypts = all_pts[i]
+        pred_keypts = all_pts[id]
 
     return True

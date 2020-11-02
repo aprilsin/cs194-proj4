@@ -1,7 +1,16 @@
 # Convolutional Neural Networks
 import torch
+import torch.nn
 import torchvision
-from torch.nn import Conv2d, Flatten, Linear, MaxPool2d, Module, ReLU
+from torch.nn import (
+    Conv2d,
+    Flatten,
+    Linear,
+    MaxPool2d,
+    Module,
+    ReLU,
+)
+from torch.nn.modules.activation import Sigmoid
 
 
 class NoseFinder(Module):
@@ -16,53 +25,27 @@ class NoseFinder(Module):
 
         self.FC1 = Linear(20 * 7 * 10, 128)
         self.FC2 = Linear(128, 2 * 1)
+        mp3 = MaxPool2d(3)
+
+        self.model = nn.Sequential(
+            Conv2d(1, 24, 3),
+            ReLU(),
+            MaxPool2d(3),
+            Conv2d(24, 30, 3),
+            ReLU(),
+            MaxPool2d(3),
+            Conv2d(30, 20, 3),
+            ReLU(),
+            MaxPool2d(3),
+            Flatten(),
+            Linear(20 * 7 * 10, 128),
+            ReLU(),
+            Linear(128, 2 * 1),
+            nn.Sigmoid(),
+        )
 
     def forward(self, img):
-        # print("input: ", img.shape)
-
-        r = ReLU()
-        mp3 = MaxPool2d(3)
-        # mp5 = MaxPool2d(5)
-        # mp7 = MaxPool2d(7)
-
-        x = self.C1(img)
-        # print("C1: ", x.shape)
-        x = r(x)
-        x = mp3(x)
-        # print("m1: ", x.shape)
-
-        x = self.C2(x)
-        # print("C2: ", x.shape)
-        x = r(x)
-        x = mp3(x)
-        # print("m2: ", x.shape)
-
-        x = self.C3(x)
-        # print("C3: ", x.shape)
-        x = r(x)
-        x = mp3(x)
-        # print("m3: ", x.shape)
-
-        # x = self.C4(x)
-        # # print("C4: ", x.shape)
-        # x = r(x)
-        # x = mp3(x)
-        # print("m4: ", x.shape)
-
-        x = Flatten()(x)
-
-        x = self.FC1(x)
-        # print("FC1: ", x.shape)
-
-        x = r(x)
-        # print(x.shape)
-
-        x = self.FC2(x)
-        x = torch.sigmoid(x)
-        x = x.reshape(-1, 1, 2)
-        # print("FC2: ", x.shape)
-
-        return x
+        return self.model(img).reshape(-1, 1, 2)
 
 
 class FaceFinder(Module):
@@ -82,7 +65,6 @@ class FaceFinder(Module):
         self.FC2 = Linear(128, 2 * 58)
 
     def forward(self, img):
-        # print("img:", img.shape)
 
         r = ReLU()
         mp3 = MaxPool2d(3)
@@ -90,45 +72,33 @@ class FaceFinder(Module):
         # mp7 = MaxPool2d(7)
 
         x = self.C1(img)
-        # print("C1: ", x.shape)
         x = r(x)
         x = mp3(x)
-        # print("m1: ", x.shape)
 
         x = self.C2(x)
-        # print("C2: ", x.shape)
         x = r(x)
         # x = mp3(x)
-        # print("m2: ", x.shape)
 
         x = self.C3(x)
-        # print("C3: ", x.shape)
         x = r(x)
         x = mp3(x)
-        # print("m3: ", x.shape)
 
         x = self.C4(x)
-        # print("C4: ", x.shape)
         x = r(x)
         # x = mp3(x)
-        # print("m4: ", x.shape)
 
         x = self.C5(x)
-        # print("C5: ", x.shape)
         x = r(x)
         # x = mp3(x)
-        # print("m5: ", x.shape)
 
         x = Flatten()(x)
 
         x = self.FC1(x)
-        # print("FC1: ", x.shape)
         x = r(x)
 
         x = self.FC2(x)
         x = torch.sigmoid(x)
         x = x.reshape(-1, 58, 2)
-        # print("FC2: ", x.shape)
 
         return x
 
