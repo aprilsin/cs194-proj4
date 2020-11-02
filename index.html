@@ -1,91 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="mystyle.css" />
-    <title>
-      CS194 Project 4: Facial Keypoint Detection with Neural Networks
-    </title>
-  </head>
-  <body>
-    <h1>CS194 Project 4: Facial Keypoint Detection with Neural Networks</h1>
-    <h2>April Sin</h2>
 
-    <h3>Overview</h3>
-    <p>Write overview here</p>
-    <h3>Part 1: Nose Keypoint</h3>
-    <p>TODO: write about part 1</p>
-    <p>TODO: add results</p>
-    <div class="row">
-      <div class="column">
-        <img src="imm_face_db/01-1m.jpg" alt="Snow" />
-        <figcaption>Test</figcaption>
-      </div>
-      <div class="column">
-        <img src="img_forest.jpg" alt="Forest" />
-        <figcaption>Test</figcaption>
-      </div>
-      <div class="column">
-        <img src="img_mountains.jpg" alt="Mountains" />
-        <figcaption>Test</figcaption>
-      </div>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="mystyle.css" />
+  <title>
+    CS194 Project 4: Facial Keypoint Detection with Neural Networks
+  </title>
+</head>
 
-      <h3>Part 1: Nose Keypoint</h3>
-      <p>TODO: write about part 1</p>
-      <p>TODO: add results</p>
-      <div class="row">
-        <div class="column">
-          <img src="imm_face_db/01-1m.jpg" alt="Snow" />
-          <figcaption>Test</figcaption>
-        </div>
-        <div class="column">
-          <img src="img_forest.jpg" alt="Forest" />
-          <figcaption>Test</figcaption>
-        </div>
-        <div class="column">
-          <img src="img_mountains.jpg" alt="Mountains" />
-          <figcaption>Test</figcaption>
-        </div>
-      </div>
-        <h3>Part 2: Face Keypoins</h3>
-        <p>TODO: write about part 2</p>
-        <p>TODO: add results</p>
-        <div class="row">
-          <div class="column">
-            <img src="imm_face_db/01-1m.jpg" alt="Snow" />
-            <figcaption>Test</figcaption>
-          </div>
-          <div class="column">
-            <img src="img_forest.jpg" alt="Forest" />
-            <figcaption>Test</figcaption>
-          </div>
-          <div class="column">
-            <img src="img_mountains.jpg" alt="Mountains" />
-            <figcaption>Test</figcaption>
-          </div>
-      </div>
-          <h3>Part 3: Larger Dataset</h3>
-          <p>TODO: write about part 3</p>
-          <p>TODO: add results</p>
-          <div class="row">
-            <div class="column">
-              <img src="imm_face_db/01-1m.jpg" alt="Snow" />
-              <figcaption>Test</figcaption>
-            </div>
-            <div class="column">
-              <img src="img_forest.jpg" alt="Forest" />
-              <figcaption>Test</figcaption>
-            </div>
-            <div class="column">
-              <img src="img_mountains.jpg" alt="Mountains" />
-              <figcaption>Test</figcaption>
-            </div>
-      </div>
-            <h3>Bells and Whisles</h3>
-            <p>TODO: write something</p>
-            <p>TODO: add results</p>
+<body>
+  <h1>CS194 Project 4: Facial Keypoint Detection with Neural Networks</h1>
+  <h2>April Sin</h2>
+
+  <h3>Overview</h3>
+  <p>
+    In the last project - Project 3: Face Morphing, we had to manually click the keypoints to identify a face.
+    To step up our game, we are making this project that automatically detect the face for us! How we acheive this is
+    by using convolutional neural networks!
+  </p>
+
+
+  <h3>Part 1: Nose Tip Detection</h3>
+  <h4>Dataset and Dataloader</h4>
+  <p>
+    Before detecting the whole face, we will try detecting just the nose.
+    We will be using the <a href=http://www2.imm.dtu.dk/~aam/datasets/datasets.html>IMM Face Dataset</a>. <br>All the
+    images
+    are resized to 240 x 320 and no data augmentations are done.
+  </p>
+  <p>For the dataloader, I used <code>batch_size = 64</code>.</p>
+
+  <p>Here are some sampled images and the truth nose keypoint:</p>
+  <div class="row">
+    <div class="column_4">
+      <img src="output/p1_d1.jpg" alt="Sample 1" />
+      <!-- <img src="data/imm_face_db/01-1m.jpg" alt="Sample 1" /> -->
     </div>
-  </body>
+    <div class="column_4">
+      <img src="output/p1_d2.jpg" alt="Sample 2" />
+    </div>
+    <div class="column_4">
+      <img src="output/p1_d3.jpg" alt="Sample 3" />
+    </div>
+  </div>
+
+  <h4>CNN Model</h4>
+  <p> I used a neural network with 5 convolution layers, each followed by ReLU and max pooling. They are then followed
+    by two fully connected layres. I used
+    <code>kernel_size = (3, 3)</code> for all the layers that needed one.</p>
+  <p>Here are all the conv layers:</p>
+  <ol>
+    <li>C1 = Conv2d(1, 24, 3)</li>
+    <li>C2 = Conv2d(24, 30, 3</li>
+    <li>C3 = Conv2d(30, 20, 3)</li>
+    <li>FC1 = Linear(20 * 7 * 10, 128)</li>
+    <li>FC2 = Linear(128, 2 * 58</li>
+  </ol>
+  <p>To train my model, I
+    used MSELoss and the Adam optimizer with <code>learning_rate = 3e-4</code>.</p>
+  </p>
+  <h4>Here are the results:</h4>
+  <div class="row">
+    <div class="column">Success Cases</div>
+    <div class="column">
+      <img src="output/p1_s1.jpg" alt="Success 1" />
+    </div>
+    <div class="column">
+      <img src="output/p1_s2.jpg" alt="Success 2" />
+    </div>
+    <div class="column">
+      <img src="output/p1_s3.jpg" alt="Success 3" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="column">Failure Cases</div>
+    <div class="column">
+      <img src="output/p1_f1.jpg" alt="Fail 1" />
+    </div>
+    <div class="column">
+      <img src="output/p1_f2.jpg" alt="Fail 2" />
+    </div>
+    <div class="column">
+      <img src="output/p1_f3.jpg" alt="Fail 3" />
+    </div>
+  </div>
+  <p>TODO -- Some reasons why these images failed could be because of shadows and the pose of the person. Since the
+    model is
+    mostly trained on images without arms showing and backgrounds with little shadow, it is not good at detecting the
+    face then those things occur in the input image.</p>
+  <h4>Training and Validation Accuracy</h4>
+  <div class="column">
+    <img src="output/p1_loss.jpg" alt="Accuracy Plot" />
+  </div>
+
+
+  <h3>Part 2: Full Facial Keypoints Detection</h3>
+  <h4>Dataset and Dataloader</h4>
+  <p>
+    Now we have succeeded in detecting one point, we can do that for more keypoints - 58 keypoints to be exact. Again,
+    we are using the <a href=http://www2.imm.dtu.dk/~aam/datasets/datasets.html>IMM Face Dataset</a>.<br>All the
+    images
+    are resized to 240 x 320. For training, data augmentation is done by randomly rotating the images (at most 12
+    degrees).
+  </p>
+  <p>For the dataloader, I used <code>batch_size = 64</code>.</p>
+  <p>Here are some sampled images and the ground-truth face keypoint:</p>
+  <div class="row">
+    <div class="column">
+      <img src="output/p2_d1.jpg" alt="Sample 1" />
+    </div>
+    <div class="column">
+      <img src="output/p2_d2.jpg" alt="Sample 2" />
+    </div>
+    <div class="column">
+      <img src="output/p2_d3.jpg" alt="Sample 3" />
+    </div>
+  </div>
+  <h4>CNN Model</h4>
+  <p> I used a neural network with 3 convolution layers, each followed by ReLU and max pooling. I used
+    <code>kernel_size = (3, 3)</code> for all the layers that needed one.</p> with
+  <code>num_epochs = 20> and </code><code>learning_rate=3e-4</code>
+  <ol>
+    <li>C1 = Conv2d(1, 18, 3)</li>
+    <li>C2 = Conv2d(18, 24, 3</li>
+    <li>C3 = Conv2d(24, 30, 3)</li>
+    <li>C4 = Conv2d(30, 30, 3)</li>
+    <li>C5 = Conv2d(30, 25, 3)</li>
+    <li>FC1 = Linear(25 * 21 * 30, 128)</li>
+    <li>FC2 = Linear(128, 2 * 58</li>
+  </ol>
+  <p>To train my model, I
+    used MSELoss and the Adam optimizer with <code>learning_rate = 3e-4</code>. Here are the results: </p>
+  </p>
+  <p>Here are the results:</p>
+  <div class="row">
+    <div class="column_5">Success Cases</div>
+    <div class="column">
+      <img src="output/p2_s2.jpg" alt="Success 1" />
+    </div>
+    <div class="column">
+      <img src="output/p2_s2.jpg" alt="Success 2" />
+    </div>
+    <div class="column">
+      <img src="output/p2_s3.jpg" alt="Success 3" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="column_5">Failure Cases</div>
+    <div class="column">
+      <img src="output/p1_f1.jpg" alt="Fail 1" />
+    </div>
+    <div class="column">
+      <img src="output/p1_f2.jpg" alt="Fail 2" />
+    </div>
+    <div class="column">
+      <img src="output/p1_f3.jpg" alt="Fail 3" />
+    </div>
+  </div>
+  <p> TODO --- Some reasons why these images failed could be because of shadows and the pose of the person. Since the
+    model is
+    mostly trained on images without arms showing and backgrounds with little shadow, it is not good at detecting the
+    face then those things occur in the input image.</p>
+  <h4>Training and Validation Accuracy</h4>
+  <div class="column">
+    <img src="output/p2_loss.jpg" alt="Accuracy Plot" />
+  </div>
+  <h4>Learned Filters Visualized</h4>
+  <p>TODO -- write something</p>
+  <div class="row">
+    <div class="column">
+      <img src="output/p2_filter1.jpg" alt="first conv layer filters" />
+      <figcaption>first conv layer filters</figcaption>
+    </div>
+    <div class="column">
+      <img src="output/p2_filter2.jpg" alt="second conv layer filters" />
+      <figcaption>second conv layer filters</figcaption>
+    </div>
+  </div>
+
+
+  <h3>Part 3: Training with a Larger Dataset</h3>
+  <h4>Dataset, Dataloader, and CNN Model</h4>
+  <p>In this part we will be using a way bigger dataset! (It has 6666 training images and 1008 test images.)</p>
+  <p>It would take forever to run if we were to train our model with our laptops. Luckily, we have access to GPUs such
+    as Google
+    Colab. With <code>batch_size = 512</code>, it took about an hour to run!</p>
+  <p>For the CNN, I used <code>ResNet18</code> with <code>num_epochs = 20</code> and <code>learning_rate = 3e-4</code>.
+  </p>
+  <h4>Here are the results:</h4>
+  <div class="row">
+    <div class="column">
+      <img src="output/p3_s2.jpg" alt="Success 1" />
+    </div>
+    <div class="column">
+      <img src="output/p3_s2.jpg" alt="Success 2" />
+    </div>
+    <div class="column">
+      <img src="output/p3_s3.jpg" alt="Success 3" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="column">
+      <img src="output/p3_s4.jpg" alt="Success 3" />
+    </div>
+    <div class="column">
+      <img src="output/p3_s5.jpg" alt="Success 3" />
+    </div>
+    <div class="column">
+      <img src="output/p3_s6.jpg" alt="Success 3" />
+    </div>
+  </div>
+  <h4>My Collection :)</h4>
+  </div>
+  <div class="row">
+    <div class="column">
+      <img src="output/mc1.jpg" alt="My Collection 1" />
+    </div>
+    <div class="column">
+      <img src="output/mc2.jpg" alt="My Collection 2" />
+    </div>
+    <div class="column">
+      <img src="output/mc3.jpg" alt="My Collection 3" />
+    </div>
+  </div>
+
+
+  <h3>Bells and Whisles</h3>
+  <p>TODO: write something</p>
+  <p>TODO: add results</p>
+  </div>
+</body>
+
 </html>

@@ -18,10 +18,26 @@ h2 {
 }
 
 h3 {
+  color: rgb(255, 132, 151);
   padding-top: 20px;
-  font-size: 130%;
+  padding-bottom: None;
+  font-size: 180%;
 }
 
+h4 {
+  font-size: 120%;
+  padding: None;
+}
+h5 {
+  text-align: center;
+  padding-top: 1%;
+  padding-bottom: 3%;
+}
+code {
+  background-color: rgb(231, 231, 231);
+  padding: 5px 8px;
+  font-size: 105%;
+}
 img {
   vertical-align: middle;
   margin: 10px, 100px;
