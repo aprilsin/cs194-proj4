@@ -453,6 +453,10 @@ class LargeTrainDataset(Dataset):
         assert_points(keypts)
         return img, keypts
 
+    def get_original_img(self, idx: int):
+        sample = self.samples[idx]
+        return sample.load_img()
+
 
 class LargeValidDataset(Dataset):
     def __init__(self) -> None:
@@ -500,6 +504,10 @@ class LargeValidDataset(Dataset):
         assert_points(keypts)
         return img, keypts
 
+    def get_original_img(self, idx: int):
+        sample = self.samples[idx]
+        return sample.load_img()
+
 
 class LargeTestDataset(Dataset):  # works the same as training set
     def __init__(self) -> None:
@@ -534,6 +542,10 @@ class LargeTestDataset(Dataset):  # works the same as training set
         assert_img(img)
         return img
 
+    def get_original_img(self, idx: int):
+        sample = self.samples[idx]
+        return sample.load_img()
+
 
 class MyTestSet(Dataset):
     def __init__(self) -> None:
@@ -567,6 +579,10 @@ class MyTestSet(Dataset):
 
         assert_img(img)
         return img
+
+    def get_original_img(self, idx: int):
+        sample = self.samples[idx]
+        return sample.load_img()
 
 
 def save_kaggle(keypts1008: List) -> None:
