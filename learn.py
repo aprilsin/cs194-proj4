@@ -38,7 +38,7 @@ def train(train_loader, model, learning_rate):
 
 # do validation
 def validate(
-    valid_loader, trained_model, show_every=1, save=False
+    valid_loader, trained_model, show_every=1
 ):  # default: show every batch
     loss_fn = F.mse_loss
     loss_per_batch = []
@@ -57,7 +57,7 @@ def validate(
             loss = loss_fn(batched_pred_keypts, batched_keypts)
             print(f"batch{i}", loss.item())
 
-            if i % show_every == 0:
+            if show_every is not None and i % show_every == 0:
                 chosen = [1, 12, 18]
                 for i in chosen:
                     display.show_keypoints(
@@ -65,10 +65,9 @@ def validate(
                     )
 
             loss_per_batch.append(loss.item())
-            if save:
-                imgs.extend(batched_imgs)
-                keypts.extend(batched_keypts)
-                pred_pts.extend(batched_pred_keypts)
+            imgs.extend(batched_imgs)
+            keypts.extend(batched_keypts)
+            pred_pts.extend(batched_pred_keypts)
 
     results = [imgs, keypts, pred_pts]
     return results, sum(loss_per_batch) / len(loss_per_batch)  # return the average loss
@@ -79,11 +78,10 @@ def test(test_loader, trained_model, save=False):
     loss_fn = F.mse_loss
     imgs, keypts, pred_pts = [], [], []
     with torch.no_grad():
-        for i, (batched_imgs, batched_keypts) in tenumerate(test_loader):
+        for i, (batched_imgs) in tenumerate(test_loader):
 
             # use GPU if available
             batched_imgs = batched_imgs.to(DEVICE)
-            batched_keypts = batched_keypts.to(DEVICE)
 
             # predict keypoints with trained model
             pred_keypts = trained_model(batched_imgs)
