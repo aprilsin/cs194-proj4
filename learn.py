@@ -39,7 +39,8 @@ def mean(xs):
 
 
 # do validation
-def validate(valid_loader, trained_model, show_every=1):  # default: show every batch
+def validate(valid_loader, model, show_every=1):  # default: show every batch
+    model = model.to(DEVICE)
     loss_per_batch = []
     imgs, keypts, pred_pts = [], [], []
     with torch.no_grad():
@@ -49,7 +50,7 @@ def validate(valid_loader, trained_model, show_every=1):  # default: show every 
             batched_keypts = batched_keypts.to(DEVICE)
 
             # predict keypoints with trained model
-            batched_pred_keypts = trained_model(batched_imgs)
+            batched_pred_keypts = model(batched_imgs)
 
             # compute and print loss.
             loss = F.mse_loss(batched_pred_keypts, batched_keypts)
@@ -69,7 +70,8 @@ def validate(valid_loader, trained_model, show_every=1):  # default: show every 
     return [imgs, keypts, pred_pts], mean(loss_per_batch)
 
 
-def test(test_loader, trained_model):
+def test(test_loader, model):
+    model = model.to(DEVICE)
     imgs, pred_pts = [], []
     with torch.no_grad():
         for i, batched_imgs in tenumerate(test_loader):
@@ -77,7 +79,7 @@ def test(test_loader, trained_model):
             batched_imgs = batched_imgs.to(DEVICE)
 
             # predict keypoints with trained model
-            pred_keypts = trained_model(batched_imgs)
+            pred_keypts = model(batched_imgs)
             imgs.extend(batched_imgs)
             pred_pts.extend(pred_keypts)
 
@@ -87,16 +89,19 @@ def test(test_loader, trained_model):
 def train_and_validate(
     train_loader, valid_loader, model, epochs, learn_rate, show_every=10
 ):
+    model = model.to(DEVICE)
     all_train_loss = []
     all_valid_loss = []
-    for ep in trange(epochs):
+    for epoch in trange(epochs):
 
-        trained_model, train_loss = train(train_loader, model, learn_rate)
-        print(f"Epoch {ep}: {train_loss = }")
-        if ep % show_every == 0:
-            _, valid_loss = validate(valid_loader, trained_model, show_every)
-            all_valid_loss.append([ep, valid_loss])
 
-        all_train_loss.append([ep, train_loss])
+        model, train_loss = train(train_loader, model, learn_rate)
+        print(f"{epoch = }: {train_loss = }")
+
+        if epoch % show_every == 0:
+            _, valid_loss = validate(valid_loader, model, show_every)
+            all_valid_loss.append([epoch, valid_loss])
+
+        all_train_loss.append([epoch, train_loss])
 
     return np.array(all_train_loss), np.array(all_valid_loss)
