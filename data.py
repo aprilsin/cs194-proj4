@@ -1,6 +1,9 @@
 # This file is for loading images and keypoints customized for the Danes and ibug dataset.
 # danes data set: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
 import math
+import time
+from datetime import datetime
+
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -8,7 +11,7 @@ from typing import (
     List,
     Tuple,
 )
-
+import pandas as pd
 import numpy as np
 import skimage.transform as ST
 import torch
@@ -24,10 +27,13 @@ from my_types import (
 
 
 DATA_DIR = Path("data")
+OUT_DIR = Path("output")
 DANES_ROOT = DATA_DIR / Path("imm_face_db")
 IBUG_ROOT = DATA_DIR / Path("ibug_300W_large_face_landmark_dataset")
 train_xml = IBUG_ROOT / Path("labels_ibug_300W_train.xml")
 test_xml = IBUG_ROOT / Path("labels_ibug_300W_test_parsed.xml")
+
+OUT_DIR.mkdir(exist_ok=True)
 assert DATA_DIR.exists()
 assert DANES_ROOT.exists()
 assert IBUG_ROOT.exists()
@@ -518,7 +524,7 @@ class LargeTestDataset(Dataset):  # works the same as training set
         return img
 
 
-def save_kaggle(keypts1008: List) -> bool:
+def save_kaggle(keypts1008: List) -> None:
     """Saves predicted keypoints of Part 3 test set as a csv file.
 
     keypts1008: List of 1008 tensors.
@@ -526,12 +532,10 @@ def save_kaggle(keypts1008: List) -> bool:
         Each tensor is of shape (68, 2).
     """
     # TODO
-
-    assert len(keypts1008) == 1008
+    N = 1_008
+    assert len(keypts1008) == N, len(keypts1008)
     assert all(assert_points(keypts) for keypts in keypts1008)
-    all_pts = keypts1008
-    for i in range(1008):
-        id = i
-        all_pts[id]
 
-    return True
+    df = pd.DataFrame(keypts1008.flatten().reshape(-1, 1), columns=["Predicted"])
+    df.index.name = "Id"
+    df.to_csv(OUT_DIR / f"{time.now()}.csv")

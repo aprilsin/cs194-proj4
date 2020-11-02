@@ -3,6 +3,7 @@ from typing import Union
 import matplotlib.pyplot as plt
 import numpy as np
 from torch import Tensor
+import cnn
 
 
 ToDisplayImage = Union[Tensor, np.ndarray]
@@ -96,7 +97,7 @@ def show_keypoints(
     plt.show()
 
 
-def show_progress(loss_per_epoch: np.ndarray, title="Loss over Epochs"):
+def show_progress(loss_per_epoch: Union[list, np.ndarray], title="Loss over Epochs"):
     if isinstance(loss_per_epoch, list):
         loss_per_epoch = np.array(loss_per_epoch)
 
@@ -111,13 +112,71 @@ def show_progress(loss_per_epoch: np.ndarray, title="Loss over Epochs"):
     plt.plot(loss_per_epoch[:, 1])
 
 
-def print_epoch(ep, train_loss, valid_loss) -> None:
-    print()
-    print(f"========== Epoch {ep} Results ==========")
-    print(f"{train_loss = }")
-    print(f"{valid_loss = }")
+def show_progress_both(
+    training_loss: Union[list, np.ndarray],
+    validation_loss: Union[list, np.ndarray],
+    title="Loss over Epochs",
+):
+    if isinstance(training_loss, list):
+        training_loss = np.array(training_loss)
+    if isinstance(validation_loss, list):
+        validation_loss = np.array(validation_loss)
+
+    assert training_loss.ndim == 2
+    assert validation_loss.ndim == 2
+
+    x = np.int64(training_loss[:, 0])
+    x = np.int64(validation_loss[:, 0])
+    plt.figure()
+    plt.title(title)
+    plt.ylabel("loss")
+    plt.xlabel("epochs")
+    plt.xticks(x)
+    plt.plot(training_loss[:, 1])
+    plt.plot(validation_loss[:, 1])
+    plt.show()
 
 
-def show_sucess(ep, results):
-    for (img, true_pts, pred_pts) in results:
-        pass
+# def print_epoch(ep, train_loss, valid_loss) -> None:
+#     print()
+#     print(f"========== Epoch {ep} Results ==========")
+#     print(f"{train_loss = }")
+#     print(f"{valid_loss = }")
+
+
+# def show_sucess(ep, results):
+#     for (img, true_pts, pred_pts) in results:
+#         pass
+
+
+def make_filter_fig(conv_layer, num_x, num_y):
+
+    # get weights and make it a numpy array
+    w = conv_layer.weight.detach().numpy()
+    num_filters = w.shape[0]
+    assert num_filters == num_x * num_y  # to make sure the filters will fit
+
+    fig, axes = plt.subplots(num_x, num_y, sharex=True, sharey=True, figsize=(10, 10))
+    for filter, ax in zip(w, axes.flat):
+        ax.imshow(filter, cmap="gray")
+    return fig
+
+
+def show_filters_part1(model: cnn.NoseFinder):
+    all_conv_figs = []
+    conv_idxs = [0, 3, 6]
+    for i in conv_idxs:
+        make_filter_fig(model.model[i])
+    return all_conv_figs
+
+
+def show_filters_part2(model: cnn.FaceFinder):
+    all_conv_figs = []
+    conv_idxs = [0, 3, 5, 8, 10]
+    for i in conv_idxs:
+        make_filter_fig(model.model[i])
+    return all_conv_figs
+
+
+def show_filters_part3(model: cnn.ResNet):
+    pass

@@ -54,7 +54,6 @@ def validate(valid_loader, model, show_every=1):  # default: show every batch
 
             # compute and print loss.
             loss = F.mse_loss(batched_pred_keypts, batched_keypts)
-            print(f"batch{i}", loss.item())
 
             if show_every is not None and i % show_every == 0:
                 chosen = [1, 12, 18]
@@ -93,15 +92,16 @@ def train_and_validate(
     model = model.to(DEVICE)
     all_train_loss = []
     all_valid_loss = []
-    for ep in trange(epochs):
+    for epoch in trange(epochs):
+
 
         model, train_loss = train(train_loader, model, learn_rate)
+        print(f"{epoch = }: {train_loss = }")
 
-        if ep % show_every == 0:
+        if epoch % show_every == 0:
             _, valid_loss = validate(valid_loader, model, show_every)
-            all_valid_loss.append([ep, valid_loss])
+            all_valid_loss.append([epoch, valid_loss])
 
-        all_train_loss.append([ep, train_loss])
+        all_train_loss.append([epoch, train_loss])
 
-    print(mean([x[1] for x in all_train_loss]))
     return np.array(all_train_loss), np.array(all_valid_loss)
