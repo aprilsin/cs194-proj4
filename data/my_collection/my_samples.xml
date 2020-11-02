@@ -1,3 +1,5 @@
+<dataset>
+<name>My Test Images</name>
 <images>
   <image file="gintoki.jpg">
     <box height="711" left="384" top="0" width="683">
@@ -13,4 +15,7 @@
   </image>
   <image file="sana.jpg">
     <box height="982" left="538" top="0" width="985">
-      </box>    
+      </box>
+   </image>
+</images>
+</dataset>

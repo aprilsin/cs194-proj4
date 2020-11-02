@@ -28,15 +28,20 @@ from my_types import (
 
 DATA_DIR = Path("data")
 OUT_DIR = Path("output")
-DANES_ROOT = DATA_DIR / Path("imm_face_db")
-IBUG_ROOT = DATA_DIR / Path("ibug_300W_large_face_landmark_dataset")
-train_xml = IBUG_ROOT / Path("labels_ibug_300W_train.xml")
-test_xml = IBUG_ROOT / Path("labels_ibug_300W_test_parsed.xml")
+
+DANES_ROOT = DATA_DIR / "imm_face_db"
+IBUG_ROOT = DATA_DIR / "ibug_300W_large_face_landmark_dataset"
+train_xml = IBUG_ROOT / "labels_ibug_300W_train.xml"
+test_xml = IBUG_ROOT / "labels_ibug_300W_test_parsed.xml"
+
+MY_DIR = DATA_DIR / "my_collection"
+my_xml = MY_DIR / "my_samples.xml"
 
 OUT_DIR.mkdir(exist_ok=True)
 assert DATA_DIR.exists()
 assert DANES_ROOT.exists()
 assert IBUG_ROOT.exists()
+assert MY_DIR.exists()
 
 
 def load_img(img_file: Path) -> Tensor:
@@ -297,6 +302,11 @@ def part3_augment(img, keypts):
     return img, keypts
 
 
+def part3_transform(img: Tensor) -> Tensor:
+    # resnet expects input of size 224 x 224
+    return TT.Resize((224, 224))(img)
+
+
 class XmlSample:
     def __init__(
         self, xml_file: Path, filename: ET.Element, height_ratio: int, width_ratio: int
@@ -387,6 +397,12 @@ class XmlTestSample(XmlSample):
         super().__init__(test_xml, filename, hr, wr)
 
 
+class MyXmlTestSample(XmlSample):
+    def __init__(self, filename: ET.Element, hr: float, wr: float):
+        super().__init__(my_xml, filename, hr, wr)
+        self.root = MY_DIR
+
+
 class LargeTrainDataset(Dataset):
     def __init__(self) -> None:
         super().__init__()
@@ -436,11 +452,6 @@ class LargeTrainDataset(Dataset):
         assert_img(img)
         assert_points(keypts)
         return img, keypts
-
-
-def part3_transform(img: Tensor) -> Tensor:
-    # resnet expects input of size 224 x 224
-    return TT.Resize((224, 224))(img)
 
 
 class LargeValidDataset(Dataset):
@@ -499,6 +510,40 @@ class LargeTestDataset(Dataset):  # works the same as training set
         assert len(test_files) == 1_008, len(test_files)
 
         self.samples = [XmlTestSample(filename=f, hr=1.4, wr=1.2) for f in test_files]
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx: int):
+        sample = self.samples[idx]
+        img = sample.load_img()
+
+        # crop image
+        top, left, height, width = sample.get_box()
+        img = TT.functional.crop(
+            img,
+            top=top,
+            left=left,
+            height=height,
+            width=width,
+        )
+        assert_img(img)
+
+        img = part3_transform(img)
+
+        assert_img(img)
+        return img
+
+
+class MyTestSet(Dataset):
+    def __init__(self) -> None:
+        super().__init__()
+
+        tree = ET.parse(my_xml)
+        test_files = tree.getroot()[1]
+        assert len(test_files) == 4, len(test_files)
+
+        self.samples = [XmlTestSample(filename=f, hr=1, wr=1) for f in test_files]
 
     def __len__(self):
         return len(self.samples)
