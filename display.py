@@ -3,6 +3,7 @@ from typing import Union
 import matplotlib.pyplot as plt
 import numpy as np
 from torch import Tensor
+import cnn
 
 
 ToDisplayImage = Union[Tensor, np.ndarray]
@@ -146,3 +147,36 @@ def show_progress_both(
 # def show_sucess(ep, results):
 #     for (img, true_pts, pred_pts) in results:
 #         pass
+
+
+def make_filter_fig(conv_layer, num_x, num_y):
+
+    # get weights and make it a numpy array
+    w = conv_layer.weight.detach().numpy()
+    num_filters = w.shape[0]
+    assert num_filters == num_x * num_y  # to make sure the filters will fit
+
+    fig, axes = plt.subplots(num_x, num_y, sharex=True, sharey=True, figsize=(10, 10))
+    for filter, ax in zip(w, axes.flat):
+        ax.imshow(filter, cmap="gray")
+    return fig
+
+
+def show_filters_part1(model: cnn.NoseFinder):
+    all_conv_figs = []
+    conv_idxs = [0, 3, 6]
+    for i in conv_idxs:
+        make_filter_fig(model.model[i])
+    return all_conv_figs
+
+
+def show_filters_part2(model: cnn.FaceFinder):
+    all_conv_figs = []
+    conv_idxs = [0, 3, 5, 8, 10]
+    for i in conv_idxs:
+        make_filter_fig(model.model[i])
+    return all_conv_figs
+
+
+def show_filters_part3(model: cnn.ResNet):
+    pass
