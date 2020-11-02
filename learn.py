@@ -31,8 +31,6 @@ def train(train_loader, model, learning_rate):
         loss.backward()
         optimizer.step()
 
-        # break  # TODO remove this when code all works
-
     return model, mean(loss_per_batch)
 
 
