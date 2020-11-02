@@ -543,7 +543,7 @@ class MyTestSet(Dataset):
         test_files = tree.getroot()[1]
         assert len(test_files) == 4, len(test_files)
 
-        self.samples = [XmlTestSample(filename=f, hr=1, wr=1) for f in test_files]
+        self.samples = [MyXmlTestSample(filename=f, hr=1, wr=1) for f in test_files]
 
     def __len__(self):
         return len(self.samples)
