@@ -1,18 +1,18 @@
 # This file is for loading images and keypoints customized for the Danes and ibug dataset.
 # danes data set: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
 import math
-import time
-from datetime import datetime
-
 import os
+import time
 import xml.etree.ElementTree as ET
+from datetime import datetime
 from pathlib import Path
 from typing import (
     List,
     Tuple,
 )
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import skimage.transform as ST
 import torch
 import torchvision.transforms as TT
@@ -365,7 +365,6 @@ class XmlSample:
         return top, left, height, width
 
     def get_original_pts(self, pts: Tensor) -> Tensor:
-        assert_points(pts)
 
         # revert ratios keypoints to actual coordinates
         img = self.load_img()
@@ -378,7 +377,6 @@ class XmlSample:
         pts[:, 0] += left
         pts[:, 1] += top
 
-        assert_points(pts)
         return pts
 
 
@@ -592,6 +590,7 @@ class MyTestSet(Dataset):
         sample = self.samples[idx]
         return sample.load_img()
 
+
 def save_kaggle(keypts1008: List) -> None:
     """Saves predicted keypoints of Part 3 test set as a csv file.
 
@@ -599,11 +598,10 @@ def save_kaggle(keypts1008: List) -> None:
         Each tensor contains the 68 predicted keypoints of a test sample.
         Each tensor is of shape (68, 2).
     """
-    # TODO
     N = 1_008
     assert len(keypts1008) == N, len(keypts1008)
-    assert all(assert_points(keypts) for keypts in keypts1008)
+    keypts1008 = torch.stack(keypts1008).cpu().numpy()
 
-    df = pd.DataFrame(keypts1008.flatten().reshape(-1, 1), columns=["Predicted"])
+    df = pd.DataFrame(keypts1008.reshape(-1, 1), columns=["Predicted"])
     df.index.name = "Id"
-    df.to_csv(OUT_DIR / f"{time.now()}.csv")
+    df.to_csv(OUT_DIR / f"{time.time():.0f}.csv")
