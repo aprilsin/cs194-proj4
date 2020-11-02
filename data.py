@@ -457,6 +457,10 @@ class LargeTrainDataset(Dataset):
         sample = self.samples[idx]
         return sample.load_img()
 
+    def get_original_pts(self, idx: int):
+        sample = self.samples[idx]
+        return sample.load_pts()
+
 
 class LargeValidDataset(Dataset):
     def __init__(self) -> None:
@@ -507,6 +511,10 @@ class LargeValidDataset(Dataset):
     def get_original_img(self, idx: int):
         sample = self.samples[idx]
         return sample.load_img()
+
+    def get_original_pts(self, idx: int):
+        sample = self.samples[idx]
+        return sample.load_pts()
 
 
 class LargeTestDataset(Dataset):  # works the same as training set
@@ -583,7 +591,6 @@ class MyTestSet(Dataset):
     def get_original_img(self, idx: int):
         sample = self.samples[idx]
         return sample.load_img()
-
 
 def save_kaggle(keypts1008: List) -> None:
     """Saves predicted keypoints of Part 3 test set as a csv file.
