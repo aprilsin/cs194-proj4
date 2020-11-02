@@ -96,28 +96,53 @@ def show_keypoints(
     plt.show()
 
 
-def show_progress(loss_per_epoch: np.ndarray, title="Loss over Epochs"):
-    if isinstance(loss_per_epoch, list):
+def show_progress(loss_per_ep: Union[list, np.ndarray], title="Loss over Epochs"):
+    if isinstance(loss_per_ep, list):
         loss_per_epoch = np.array(loss_per_epoch)
 
-    assert loss_per_epoch.ndim == 2
+    assert loss_per_ep.ndim == 2
 
-    x = np.int64(loss_per_epoch[:, 0])
+    x = int(loss_per_ep[:, 0])
     plt.figure()
     plt.title(title)
     plt.ylabel("loss")
     plt.xlabel("epochs")
     plt.xticks(x)
-    plt.plot(loss_per_epoch[:, 1])
+    plt.plot(loss_per_ep[:, 1])
 
 
-def print_epoch(ep, train_loss, valid_loss) -> None:
-    print()
-    print(f"========== Epoch {ep} Results ==========")
-    print(f"{train_loss = }")
-    print(f"{valid_loss = }")
+def show_progress_both(
+    training_loss: Union[list, np.ndarray],
+    validation_loss: Union[list, np.ndarray],
+    title="Loss over Epochs",
+):
+    if isinstance(training_loss, list):
+        training_loss = np.array(training_loss)
+    if isinstance(validation_loss, list):
+        validation_loss = np.array(validation_loss)
+
+    assert training_loss.ndim == 2
+    assert validation_loss.ndim == 2
+
+    x = np.int64(training_loss[:, 0])
+    x = np.int64(validation_loss[:, 0])
+    plt.figure()
+    plt.title(title)
+    plt.ylabel("loss")
+    plt.xlabel("epochs")
+    plt.xticks(x)
+    plt.plot(training_loss[:, 1])
+    plt.plot(validation_loss[:, 1])
+    plt.show()
 
 
-def show_sucess(ep, results):
-    for (img, true_pts, pred_pts) in results:
-        pass
+# def print_epoch(ep, train_loss, valid_loss) -> None:
+#     print()
+#     print(f"========== Epoch {ep} Results ==========")
+#     print(f"{train_loss = }")
+#     print(f"{valid_loss = }")
+
+
+# def show_sucess(ep, results):
+#     for (img, true_pts, pred_pts) in results:
+#         pass
