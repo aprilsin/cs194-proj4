@@ -59,7 +59,8 @@
     <li>FC2 = Linear(128, 2 * 58</li>
   </ol>
   <p>To train my model, I
-    used MSELoss and the Adam optimizer with <code>learning_rate = 3e-4</code>.</p>
+    used MSELoss and the Adam optimizer with
+    </code><code>learning_rate=3e-4</code> and with <code>num_epochs = 20</code>.</p>
   </p>
   <h4>Here are the results:</h4>
   <div class="row">
@@ -92,7 +93,7 @@
     face then those things occur in the input image.</p>
   <h4>Training and Validation Accuracy</h4>
   <div class="column">
-    <img src="output/p1_loss.jpg" alt="Accuracy Plot" />
+    <img src="output/p1_loss.jpg" alt="Part 1 Accuracy" />
   </div>
 
 
@@ -108,20 +109,19 @@
   <p>For the dataloader, I used <code>batch_size = 64</code>.</p>
   <p>Here are some sampled images and the ground-truth face keypoint:</p>
   <div class="row">
-    <div class="column">
+    <div class="column_4">
       <img src="output/p2_d1.jpg" alt="Sample 1" />
     </div>
-    <div class="column">
+    <div class="column_4">
       <img src="output/p2_d2.jpg" alt="Sample 2" />
     </div>
-    <div class="column">
+    <div class="column_4">
       <img src="output/p2_d3.jpg" alt="Sample 3" />
     </div>
   </div>
   <h4>CNN Model</h4>
   <p> I used a neural network with 3 convolution layers, each followed by ReLU and max pooling. I used
-    <code>kernel_size = (3, 3)</code> for all the layers that needed one.</p> with
-  <code>num_epochs = 20> and </code><code>learning_rate=3e-4</code>
+    <code>kernel_size = (3, 3)</code> for all the layers that needed one.</p>
   <ol>
     <li>C1 = Conv2d(1, 18, 3)</li>
     <li>C2 = Conv2d(18, 24, 3</li>
@@ -131,8 +131,9 @@
     <li>FC1 = Linear(25 * 21 * 30, 128)</li>
     <li>FC2 = Linear(128, 2 * 58</li>
   </ol>
-  <p>To train my model, I
-    used MSELoss and the Adam optimizer with <code>learning_rate = 3e-4</code>. Here are the results: </p>
+  <p>Similarly to Part 1, I trained my model using
+    MSELoss and the Adam optimizer with
+    </code><code>learning_rate=3e-4</code> and with <code>num_epochs = 20</code>.</p>
   </p>
   <p>Here are the results:</p>
   <div class="row">
@@ -150,13 +151,13 @@
   <div class="row">
     <div class="column_5">Failure Cases</div>
     <div class="column">
-      <img src="output/p1_f1.jpg" alt="Fail 1" />
+      <img src="output/p2_f1.jpg" alt="Fail 1" />
     </div>
     <div class="column">
-      <img src="output/p1_f2.jpg" alt="Fail 2" />
+      <img src="output/p2_f2.jpg" alt="Fail 2" />
     </div>
     <div class="column">
-      <img src="output/p1_f3.jpg" alt="Fail 3" />
+      <img src="output/p2_f3.jpg" alt="Fail 3" />
     </div>
   </div>
   <p> TODO --- Some reasons why these images failed could be because of shadows and the pose of the person. Since the
@@ -165,16 +166,16 @@
     face then those things occur in the input image.</p>
   <h4>Training and Validation Accuracy</h4>
   <div class="column">
-    <img src="output/p2_loss.jpg" alt="Accuracy Plot" />
+    <img src="output/p2_loss.jpg" alt="Part 2 Accuracy Plot" />
   </div>
   <h4>Learned Filters Visualized</h4>
   <p>TODO -- write something</p>
   <div class="row">
-    <div class="column">
+    <div class="column_5">
       <img src="output/p2_filter1.jpg" alt="first conv layer filters" />
       <figcaption>first conv layer filters</figcaption>
     </div>
-    <div class="column">
+    <div class="column_5">
       <img src="output/p2_filter2.jpg" alt="second conv layer filters" />
       <figcaption>second conv layer filters</figcaption>
     </div>
@@ -187,7 +188,8 @@
   <p>It would take forever to run if we were to train our model with our laptops. Luckily, we have access to GPUs such
     as Google
     Colab. With <code>batch_size = 512</code>, it took about an hour to run!</p>
-  <p>For the CNN, I used <code>ResNet18</code> with <code>num_epochs = 20</code> and <code>learning_rate = 3e-4</code>.
+  <p>For the CNN, I used <code>ResNet18</code>. And to train, I again used MSELos and the Adam optimizer with
+    <code>learning_rate = 3e-4</code>. But this time I have <code>num_epochs = 100</code>.
   </p>
   <h4>Here are the results:</h4>
   <div class="row">
@@ -228,8 +230,20 @@
 
 
   <h3>Bells and Whisles</h3>
-  <p>TODO: write something</p>
-  <p>TODO: add results</p>
+  <p>Using anti-aliased max pool from the <a href="https://richzhang.github.io/antialiased-cnns">work of Richard
+      Zhang</a> in replace of <code>torch.nn.MaxPool2d</code>, I was able to produce better results for part 2.<br>
+    TODO -- We can see that at a earlier epoch, the loss drops off already.</p>
+  </div>
+  <div class="row">
+    <div class="column_3">
+      <img src="output/p2_loss.jpg" alt="Part 2 Accuracy Plot" />
+      <figcaption>Accuracy from before, without anti-aliased cnn.</figcaption>
+    </div>
+    <div class="column_3">
+      <img src="output/anti_loss.jpg" alt="Anti-aliased Accuracy Plot" />
+      <figcaption>Accuracy with anti-aliased cnn.</figcaption>
+    </div>
+  </div>
   </div>
 </body>
 

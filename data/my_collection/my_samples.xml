@@ -1,0 +1,16 @@
+<images>
+  <image file="gintoki.jpg">
+    <box height="711" left="384" top="0" width="683">
+      </box>
+  </image>
+  <image file="kge.jpg">
+    <box height="308" left="191" top="7" width="262">
+      </box>
+  </image>
+  <image file="louis.jpg">
+    <box height="663" left="312" top="113" width="497">
+      </box>
+  </image>
+  <image file="sana.jpg">
+    <box height="982" left="538" top="0" width="985">
+      </box>    

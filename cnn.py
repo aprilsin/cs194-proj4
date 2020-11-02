@@ -2,6 +2,7 @@
 import torch
 import torchvision
 from torch import nn
+from antialiased_cnns import BlurPool
 from torch.nn import (
     Conv2d,
     Flatten,
@@ -10,7 +11,6 @@ from torch.nn import (
     Module,
     ReLU,
 )
-
 
 class NoseFinder(Module):
     def __init__(self):
@@ -71,6 +71,56 @@ class FaceFinder(Module):
         x = self.C1(img)
         x = r(x)
         x = mp3(x)
+
+        x = self.C2(x)
+        x = r(x)
+        # x = mp3(x)
+
+        x = self.C3(x)
+        x = r(x)
+        x = mp3(x)
+
+        x = self.C4(x)
+        x = r(x)
+        # x = mp3(x)
+
+        x = self.C5(x)
+        x = r(x)
+        # x = mp3(x)
+
+        x = Flatten()(x)
+
+        x = self.FC1(x)
+        x = r(x)
+
+        x = self.FC2(x)
+        x = torch.sigmoid(x)
+        x = x.reshape(-1, 58, 2)
+
+        return x
+
+class FaceFinder(Module):
+    def __init__(self):
+        super().__init__()
+
+        # formula: (N - F) / stride + 1
+        self.C1 = Conv2d(1, 18, 3)
+        self.C2 = Conv2d(18, 24, 3)
+        self.C3 = Conv2d(24, 30, 3)
+
+        self.C4 = Conv2d(30, 30, 3)
+        self.C5 = Conv2d(30, 25, 3)
+
+        self.FC1 = Linear(25 * 21 * 30, 128)
+        self.FC2 = Linear(128, 2 * 58)
+
+    def forward(self, img):
+
+        r = ReLU()
+
+        x = self.C1(img)
+        x = r(x)
+        x = BlurPool(18)
 
         x = self.C2(x)
         x = r(x)
