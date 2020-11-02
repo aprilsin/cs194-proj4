@@ -68,7 +68,7 @@ class FaceKeypointsDataset(Dataset):
         self,
         idxs: Sequence[int],
         root_dir: Path,
-        transform: Optional[Callable] = None,
+        augment: Optional[Callable] = None,
     ) -> None:
         self.root_dir = root_dir
         self.img_files = sorted(
@@ -78,7 +78,23 @@ class FaceKeypointsDataset(Dataset):
             f for f in self.root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
         )
         self.len = len(self.img_files)
-        self.transform = transform
+        self.augment = augment
+
+    def __len__(self) -> int:
+        return self.len
+
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        raise ValueError("This function should not be called")
+
+
+class FaceKeypointsTrainDataset(FaceKeypointsDataset):
+    def __init__(
+        self,
+        idxs: Sequence[int],
+        root_dir: Path,
+        augment: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(idx, root_dir, augment)
 
     def __len__(self) -> int:
         return self.len
@@ -91,22 +107,48 @@ class FaceKeypointsDataset(Dataset):
         img = load_img(img_name)
         points = load_asf(asf_name)
 
-        if self.transform is not None:
-            img, points = self.transform(img, points)
+        if self.augment is not None:
+            img, points = self.augment(img, points)
 
         assert_img(img)
         assert_points(points)
         return img, points
 
 
-class NoseKeypointDataset(FaceKeypointsDataset):
+class FaceKeypointsTestDataset(FaceKeypointsDataset):
     def __init__(
         self,
         idxs: Sequence[int],
         root_dir: Path,
-        transform: Optional[Callable] = None,
+        augment: Optional[Callable] = None,
     ) -> None:
-        super().__init__(idxs, root_dir, transform)
+        super().__init__(idxs, root_dir, augment)
+
+    def __len__(self) -> int:
+        return self.len
+
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+
+        img_name, asf_name = self.img_files[idx], self.asf_files[idx]
+
+        img = load_img(img_name)
+        points = load_asf(asf_name)
+
+        if self.augment is not None:
+            img, points = self.augment(img, points)
+
+        assert_img(img)
+        return img
+
+
+class NoseKeypointTrainDataset(FaceKeypointsTrainDataset):
+    def __init__(
+        self,
+        idxs: Sequence[int],
+        root_dir: Path,
+        augment: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(idxs, root_dir, augment)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         # TODO add augmentations with if random.random()<THRESHOLD
@@ -116,6 +158,22 @@ class NoseKeypointDataset(FaceKeypointsDataset):
         NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
         nose_point = points[NOSE_INDEX].reshape(1, 2)
         return img, nose_point
+
+
+class NoseKeypointTestDataset(FaceKeypointsTestDataset):
+    def __init__(
+        self,
+        idxs: Sequence[int],
+        root_dir: Path,
+        augment: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(idxs, root_dir, augment)
+
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+        # TODO add augmentations with if random.random()<THRESHOLD
+
+        img, points = super().__getitem__(idx)
+        return img
 
 
 class XmlSample:
@@ -216,13 +274,13 @@ class LargeDataset(Dataset):  # loads xml files
         data_dir: Path,
         xml_file: Path,
         sample_class: type = XmlSample,
-        transform: Optional[Callable] = None,
+        augment: Optional[Callable] = None,
     ) -> None:
 
         self.data_dir = data_dir
         self.xml = xml_file
         self.sample_class = sample_class
-        self.transform = transform
+        self.augment = augment
 
         tree = ET.parse(self.xml)
         all_files = tree.getroot()[2]
@@ -247,11 +305,11 @@ class LargeTrainDataset(LargeDataset):  # loads xml files
         self,
         data_dir: Path,
         xml_file: Path,
-        transform: Optional[Callable] = None,
+        augment: Optional[Callable] = None,
     ) -> None:
-        super().__init__(data_dir, xml_file, XmlTrainSample, transform)
+        super().__init__(data_dir, xml_file, XmlTrainSample, augment)
 
-    def __getitem__(self, idx:int):
+    def __getitem__(self, idx: int):
         sample = self.samples[idx]
         img = sample.load_img()
         keypts = sample.load_pts()
@@ -279,8 +337,8 @@ class LargeTrainDataset(LargeDataset):  # loads xml files
         # resize to 224x224
         img = TT.Resize((224, 224))(img)
 
-        if self.transform is not None:
-            img, keypts = self.transform(img, keypts)
+        if self.augment is not None:
+            img, keypts = self.augment(img, keypts)
 
         assert_img(img)
         assert_points(keypts)
@@ -292,11 +350,11 @@ class LargeTestDataset(LargeDataset):  # loads xml files
         self,
         data_dir: Path,
         xml_file: Path,
-        transform: Optional[Callable] = None,
+        augment: Optional[Callable] = None,
     ) -> None:
-        super().__init__(data_dir, xml_file, XmlTestSample, transform)
+        super().__init__(data_dir, xml_file, XmlTestSample, augment)
 
-    def __getitem__(self, idx:int):
+    def __getitem__(self, idx: int):
         sample = self.samples[idx]
         img = sample.load_img()
 
@@ -314,11 +372,12 @@ class LargeTestDataset(LargeDataset):  # loads xml files
         # resize to 224x224
         img = TT.Resize((224, 224))(img)
 
-        # if self.transform is not None:
-        #     img, keypts = self.transform(img, keypts)
+        # if self.augment is not None:
+        #     img, keypts = self.augment(img, keypts)
 
         assert_img(img)
         return img
+
 
 # def get_id(filename: ET.Element):
 #     img_name = filename.attrib["file"]
