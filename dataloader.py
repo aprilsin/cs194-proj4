@@ -371,7 +371,6 @@ class LargeValidDataset(LargeDataset):  # works the same as training set
         super().__init__(
             data_dir, xml_file, XmlValidSample, None
         )  # no augmentation for validation set
-    
 
     def __getitem__(self, idx: int):
         sample = self.samples[idx]

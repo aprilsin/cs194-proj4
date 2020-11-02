@@ -37,9 +37,7 @@ def train(train_loader, model, learning_rate):
 
 
 # do validation
-def validate(
-    valid_loader, trained_model, show_every=1
-):  # default: show every batch
+def validate(valid_loader, trained_model, show_every=1):  # default: show every batch
     loss_fn = F.mse_loss
     loss_per_batch = []
     imgs, keypts, pred_pts = [], [], []
