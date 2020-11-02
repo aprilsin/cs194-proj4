@@ -5,17 +5,13 @@ import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import (
-    Callable,
     List,
-    Optional,
-    Sequence,
     Tuple,
 )
 
 import numpy as np
 import skimage.transform as ST
 import torch
-import torchvision
 import torchvision.transforms as TT
 from PIL import Image
 from torch import Tensor
@@ -136,7 +132,7 @@ class NoseKeypointValidDataset(Dataset):
         super().__init__()
         # Use all 6 images of the first 32 persons (index 1-32) as the training set
         # (total 32 x 6 = 192 images)
-        idxs = torch.arange(1, 33)
+        idxs = torch.arange(33, 40 + 1)
         root_dir = DANES_ROOT
         self.img_files = sorted(
             f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
@@ -156,42 +152,6 @@ class NoseKeypointValidDataset(Dataset):
         img = load_img(img_name)
         points = load_asf(asf_name)
         # no augmentation since we're not training
-        img, points = part1_transform(img, points)
-
-        NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
-        nose_point = points[NOSE_INDEX].reshape(1, 2)
-
-        assert_img(img)
-        assert_points(nose_point)
-        return img, nose_point
-
-
-class NoseKeypointTestDataset(Dataset):  # not used
-    def __init__(self) -> None:
-
-        super().__init__()
-        # Use images of the remaining 8 persons (index 33-40) as the validation set
-        # (total 8 * 6 = 48 images)
-        idxs = torch.arange(32, 40)
-        root_dir = DANES_ROOT
-        self.img_files = sorted(
-            f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
-        )
-        self.asf_files = sorted(
-            f for f in root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
-        )
-        assert len(self.img_files) == len(
-            self.asf_files
-        ), f"{len(self.img_files) = },  {len(self.asf_files) = }"
-
-    def __len__(self):
-        return len(self.img_files)
-
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-        img_name, asf_name = self.img_files[idx], self.asf_files[idx]
-        img = load_img(img_name)
-        points = load_asf(asf_name)
-
         img, points = part1_transform(img, points)
 
         NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
@@ -294,7 +254,7 @@ class FaceKeypointsValidDataset(Dataset):  # works the same as training set
         super().__init__()
         # Use all 6 images of the first 32 persons (index 1-32) as the training set
         # (total 32 x 6 = 192 images)
-        idxs = torch.arange(1, 33)
+        idxs = torch.arange(33, 40 + 1)
         root_dir = DANES_ROOT
         self.img_files = sorted(
             f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
@@ -319,38 +279,6 @@ class FaceKeypointsValidDataset(Dataset):  # works the same as training set
         assert_img(img)
         assert_points(points)
         return img, points
-
-
-class FaceKeypointsTestDataset(Dataset):
-    def __init__(self) -> None:
-
-        super().__init__()
-        # Use images of the remaining 8 persons (index 33-40) as the validation set
-        # (total 8 * 6 = 48 images)
-        idxs = torch.arange(32, 40)
-        root_dir = DANES_ROOT
-
-        self.img_files = sorted(
-            f for f in root_dir.glob("*.jpg") if int(f.name.split("-")[0]) in idxs
-        )
-        self.asf_files = sorted(
-            f for f in root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
-        )
-        assert len(self.img_files) == len(
-            self.asf_files
-        ), f"{len(self.img_files) = },  {len(self.asf_files) = }"
-
-    def __len__(self):
-        return len(self.img_files)
-
-    def __getitem__(self, idx: int) -> Tensor:
-        img_name, asf_name = self.img_files[idx], self.asf_files[idx]
-        img = load_img(img_name)
-        points = load_asf(asf_name)
-        img, points = part2_transform(img, points)
-
-        assert_img(img)
-        return img
 
 
 #
@@ -457,11 +385,14 @@ class LargeTrainDataset(Dataset):
     def __init__(self) -> None:
         super().__init__()
 
-        tree = ET.parse(self.xml)
+        tree = ET.parse(train_xml)
         all_files = tree.getroot()[2]
+        assert len(all_files) == 6_666, len(all_files)
+        train_files = all_files[:6_000]
+        assert len(train_files) == 6_000, len(train_files)
 
         # initialize all samples in dataset as XmlSample
-        self.samples = [XmlTrainSample(filename=f, hr=1.4, wr=1.2) for f in all_files]
+        self.samples = [XmlTrainSample(filename=f, hr=1.4, wr=1.2) for f in train_files]
 
     def __len__(self):
         return len(self.samples)
@@ -510,10 +441,13 @@ class LargeValidDataset(Dataset):
     def __init__(self) -> None:
         super().__init__()
 
-        tree = ET.parse(self.xml)
+        tree = ET.parse(train_xml)
         all_files = tree.getroot()[2]
+        assert len(all_files) == 6_666, len(all_files)
+        valid_files = all_files[6_000:]
+        assert len(valid_files) == 666, len(valid_files)
 
-        self.samples = [XmlValidSample(filename=f, hr=1.4, wr=1.2) for f in all_files]
+        self.samples = [XmlValidSample(filename=f, hr=1.4, wr=1.2) for f in valid_files]
 
     def __len__(self):
         return len(self.samples)
@@ -554,10 +488,11 @@ class LargeTestDataset(Dataset):  # works the same as training set
     def __init__(self) -> None:
         super().__init__()
 
-        tree = ET.parse(self.xml)
-        all_files = tree.getroot()[2]
+        tree = ET.parse(test_xml)
+        test_files = tree.getroot()[2]
+        assert len(test_files) == 1_008, len(test_files)
 
-        self.samples = [XmlTestSample(filename=f, hr=1.4, wr=1.2) for f in all_files]
+        self.samples = [XmlTestSample(filename=f, hr=1.4, wr=1.2) for f in test_files]
 
     def __len__(self):
         return len(self.samples)
@@ -595,9 +530,8 @@ def save_kaggle(keypts1008: List) -> bool:
     assert len(keypts1008) == 1008
     assert all(assert_points(keypts) for keypts in keypts1008)
     all_pts = keypts1008
-    all_pds = []
     for i in range(1008):
         id = i
-        pred_keypts = all_pts[id]
+        all_pts[id]
 
     return True

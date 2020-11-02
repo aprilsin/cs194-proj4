@@ -31,7 +31,7 @@ def train(train_loader, model, learning_rate):
         loss.backward()
         optimizer.step()
 
-        break  # TODO remove this when code all works
+        # break  # TODO remove this when code all works
 
     return model, mean(loss_per_batch)
 
@@ -88,7 +88,7 @@ def test(test_loader, trained_model):
 
 
 def train_and_validate(
-    train_loader, test_loader, model, epochs, learn_rate, show_every=10
+    train_loader, valid_loader, model, epochs, learn_rate, show_every=10
 ):
     all_train_loss = []
     all_valid_loss = []
@@ -97,10 +97,10 @@ def train_and_validate(
         trained_model, train_loss = train(train_loader, model, learn_rate)
 
         if ep % show_every == 0:
-            _, valid_loss = validate(test_loader, trained_model, show_every)
+            _, valid_loss = validate(valid_loader, trained_model, show_every)
             all_valid_loss.append([ep, valid_loss])
 
         all_train_loss.append([ep, train_loss])
 
-    print(mean(all_train_loss))
+    print(mean([x[1] for x in all_train_loss]))
     return np.array(all_train_loss), np.array(all_valid_loss)

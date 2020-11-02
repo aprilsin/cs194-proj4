@@ -1,7 +1,7 @@
 # Convolutional Neural Networks
 import torch
-import torch.nn
 import torchvision
+from torch import nn
 from torch.nn import (
     Conv2d,
     Flatten,
@@ -10,7 +10,6 @@ from torch.nn import (
     Module,
     ReLU,
 )
-from torch.nn.modules.activation import Sigmoid
 
 
 class NoseFinder(Module):
@@ -25,7 +24,6 @@ class NoseFinder(Module):
 
         self.FC1 = Linear(20 * 7 * 10, 128)
         self.FC2 = Linear(128, 2 * 1)
-        mp3 = MaxPool2d(3)
 
         self.model = nn.Sequential(
             Conv2d(1, 24, 3),
@@ -57,11 +55,10 @@ class FaceFinder(Module):
         self.C2 = Conv2d(18, 24, 3)
         self.C3 = Conv2d(24, 30, 3)
 
-        # FIXME
         self.C4 = Conv2d(30, 30, 3)
         self.C5 = Conv2d(30, 25, 3)
 
-        self.FC1 = Linear(25 * 47 * 65, 128)
+        self.FC1 = Linear(25 * 21 * 30, 128)
         self.FC2 = Linear(128, 2 * 58)
 
     def forward(self, img):
