@@ -1,5 +1,6 @@
 # This file is for loading images and keypoints customized for the Danes and ibug dataset.
-# data source: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
+# danes data set: http://www2.imm.dtu.dk/~aam/datasets/datasets.html.
+
 import math
 import os
 import xml.etree.ElementTree as ET
@@ -39,14 +40,6 @@ def load_asf(file: os.PathLike) -> Tensor:
     return points
 
 
-def load_nose(file: os.PathLike) -> Tensor:
-    points = load_asf(file)
-    NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
-    nose_point = points[NOSE_INDEX].reshape(1, 2)
-    assert_points(nose_point)
-    return nose_point
-
-
 def load_img(img_file: Path):
     t = Image.open((img_file))
     pipeline = TT.Compose(
@@ -63,7 +56,7 @@ def load_img(img_file: Path):
     return img
 
 
-class FaceKeypointsDataset(Dataset):
+class FaceKeypointsDataset(Dataset):  # parent class for all of part 1 and 2
     def __init__(
         self,
         idxs: Sequence[int],
@@ -77,11 +70,10 @@ class FaceKeypointsDataset(Dataset):
         self.asf_files = sorted(
             f for f in self.root_dir.glob("*.asf") if int(f.name.split("-")[0]) in idxs
         )
-        self.len = len(self.img_files)
         self.augment = augment
 
     def __len__(self) -> int:
-        return self.len
+        return len(self.img_files)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         raise ValueError("This function should not be called")
@@ -95,9 +87,6 @@ class FaceKeypointsTrainDataset(FaceKeypointsDataset):
         augment: Optional[Callable] = None,
     ) -> None:
         super().__init__(idxs, root_dir, augment)
-
-    def __len__(self) -> int:
-        return self.len
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         # TODO add augmentations with if random.random()<THRESHOLD
@@ -115,6 +104,18 @@ class FaceKeypointsTrainDataset(FaceKeypointsDataset):
         return img, points
 
 
+class FaceKeypointsValidDataset(
+    FaceKeypointsTrainDataset
+):  # works the same as training set
+    def __init__(
+        self,
+        idxs: Sequence[int],
+        root_dir: Path,
+        augment: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(idxs, root_dir, None)  # no augmentation for validation set
+
+
 class FaceKeypointsTestDataset(FaceKeypointsDataset):
     def __init__(
         self,
@@ -122,20 +123,11 @@ class FaceKeypointsTestDataset(FaceKeypointsDataset):
         root_dir: Path,
         augment: Optional[Callable] = None,
     ) -> None:
-        super().__init__(idxs, root_dir, augment)
-
-    def __len__(self) -> int:
-        return self.len
+        super().__init__(idxs, root_dir, None)  # no augmentation for test set
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-
-        img_name, asf_name = self.img_files[idx], self.asf_files[idx]
-
+        img_name = self.img_files[idx]
         img = load_img(img_name)
-        points = load_asf(asf_name)
-
-        if self.augment is not None:
-            img, points = self.augment(img, points)
 
         assert_img(img)
         return img
@@ -153,11 +145,26 @@ class NoseKeypointTrainDataset(FaceKeypointsTrainDataset):
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
         # TODO add augmentations with if random.random()<THRESHOLD
 
-        img, points = super().__getitem__(idx)
+        img, points = super().__getitem__(idx)  # augmentation is done by parent class
 
         NOSE_INDEX = 53 - 1  # nose is 53rd keypoint, minus 1 for zero-index
         nose_point = points[NOSE_INDEX].reshape(1, 2)
+
+        assert_img(img)
+        assert_points(nose_point)
         return img, nose_point
+
+
+class NoseKeypointValidDataset(
+    NoseKeypointTrainDataset
+):  # works the same as training set
+    def __init__(
+        self,
+        idxs: Sequence[int],
+        root_dir: Path,
+        augment: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(idxs, root_dir, None)  # no augmentation for validation set
 
 
 class NoseKeypointTestDataset(FaceKeypointsTestDataset):
@@ -165,15 +172,17 @@ class NoseKeypointTestDataset(FaceKeypointsTestDataset):
         self,
         idxs: Sequence[int],
         root_dir: Path,
-        augment: Optional[Callable] = None,
     ) -> None:
-        super().__init__(idxs, root_dir, augment)
+        super().__init__(idxs, root_dir, None)  # no augmentation for test set
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-        # TODO add augmentations with if random.random()<THRESHOLD
-
-        img, points = super().__getitem__(idx)
+        img = super().__getitem__(idx)
         return img
+
+
+#
+# Part 3
+#
 
 
 class XmlSample:
@@ -261,6 +270,13 @@ class XmlTrainSample(XmlSample):
         return keypts
 
 
+class XmlValidSample(XmlTrainSample):  # works exactly the same as XmlTestSample
+    def __init__(
+        self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
+    ):
+        super().__init__(root_dir, xml_file, filename, hr, wr)
+
+
 class XmlTestSample(XmlSample):
     def __init__(
         self, root_dir: Path, xml_file: Path, filename: ET.Element, hr: int, wr: int
@@ -289,7 +305,7 @@ class LargeDataset(Dataset):  # loads xml files
         self.samples = []
         for f in all_files:
             sample = sample_class(
-                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1, wr=1
+                root_dir=data_dir, xml_file=self.xml, filename=f, hr=1.4, wr=1.2
             )
             self.samples.append(sample)
 
@@ -297,10 +313,10 @@ class LargeDataset(Dataset):  # loads xml files
         return len(self.samples)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
-        return None
+        raise ValueError("this function should not be called")
 
 
-class LargeTrainDataset(LargeDataset):  # loads xml files
+class LargeTrainDataset(LargeDataset):
     def __init__(
         self,
         data_dir: Path,
@@ -345,14 +361,28 @@ class LargeTrainDataset(LargeDataset):  # loads xml files
         return img, keypts
 
 
-class LargeTestDataset(LargeDataset):  # loads xml files
+class LargeValidDataset(LargeTrainDataset):  # works the same as training set
     def __init__(
         self,
         data_dir: Path,
         xml_file: Path,
         augment: Optional[Callable] = None,
     ) -> None:
-        super().__init__(data_dir, xml_file, XmlTestSample, augment)
+        super().__init__(
+            data_dir, xml_file, XmlTrainSample, None
+        )  # no augmentation for validation set
+
+
+class LargeTestDataset(LargeDataset):  # works the same as training set
+    def __init__(
+        self,
+        data_dir: Path,
+        xml_file: Path,
+        augment: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(
+            data_dir, xml_file, XmlTrainSample, None
+        )  # no augmentation for validation set
 
     def __getitem__(self, idx: int):
         sample = self.samples[idx]
@@ -371,9 +401,6 @@ class LargeTestDataset(LargeDataset):  # loads xml files
 
         # resize to 224x224
         img = TT.Resize((224, 224))(img)
-
-        # if self.augment is not None:
-        #     img, keypts = self.augment(img, keypts)
 
         assert_img(img)
         return img
