@@ -361,7 +361,7 @@ class LargeTrainDataset(LargeDataset):
         return img, keypts
 
 
-class LargeValidDataset(LargeTrainDataset):  # works the same as training set
+class LargeValidDataset(LargeDataset):  # works the same as training set
     def __init__(
         self,
         data_dir: Path,
@@ -369,8 +369,44 @@ class LargeValidDataset(LargeTrainDataset):  # works the same as training set
         augment: Optional[Callable] = None,
     ) -> None:
         super().__init__(
-            data_dir, xml_file, XmlTrainSample, None
+            data_dir, xml_file, XmlValidSample, None
         )  # no augmentation for validation set
+    
+
+    def __getitem__(self, idx: int):
+        sample = self.samples[idx]
+        img = sample.load_img()
+        keypts = sample.load_pts()
+
+        # crop image
+        top, left, height, width = sample.get_box()
+        img = TT.functional.crop(
+            img,
+            top=top,
+            left=left,
+            height=height,
+            width=width,
+        )
+        assert_img(img)
+
+        # fix keypoints according to crop
+        keypts[:, 0] -= left
+        keypts[:, 1] -= top
+
+        # make keypoints ratios
+        h, w = img.shape[-2:]
+        keypts[:, 0] /= w
+        keypts[:, 1] /= h
+
+        # resize to 224x224
+        img = TT.Resize((224, 224))(img)
+
+        if self.augment is not None:
+            img, keypts = self.augment(img, keypts)
+
+        assert_img(img)
+        assert_points(keypts)
+        return img, keypts
 
 
 class LargeTestDataset(LargeDataset):  # works the same as training set
