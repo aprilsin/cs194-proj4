@@ -95,15 +95,19 @@ def show_keypoints(
     plt.show()
 
 
-def show_progress(loss_per_ep:List, title="Loss over Epochs"):
-    loss_per_epoch = np.array(loss_per_epoch)
-    x = np.arange(len(loss_per_ep))
+def show_progress(loss_per_ep: Union[list, np.ndarray], title="Loss over Epochs"):
+    if isinstance(loss_per_ep, list):
+        loss_per_epoch = np.array(loss_per_epoch)
+
+    assert loss_per_ep.ndim == 2
+
+    x = int(loss_per_ep[:, 0])
     plt.figure()
     plt.title(title)
     plt.ylabel("loss")
     plt.xlabel("epochs")
     plt.xticks(x)
-    plt.plot(loss_per_ep[:, 0])
+    plt.plot(loss_per_ep[:, 1])
 
 
 def print_epoch(ep, train_loss, valid_loss) -> None:

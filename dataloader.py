@@ -94,7 +94,7 @@ class FaceKeypointsTrainDataset(FaceKeypointsDataset):
         root_dir: Path,
         augment: Optional[Callable] = None,
     ) -> None:
-        super().__init__(idx, root_dir, augment)
+        super().__init__(idxs, root_dir, augment)
 
     def __len__(self) -> int:
         return self.len
