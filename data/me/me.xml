@@ -2,69 +2,101 @@
 <name>My Test Images</name>
 <images>
   <image file="me_2002.jpg">
-    <box height="287" left="54" top="810" width="287">
-      </box>
+    <face height="287" left="54" top="810" width="287">
+      </face>
+          <crop height="287" left="54" top="810" width="287">
+      </crop>
   </image>
   <image file="me_2003.jpeg">
-    <box height="208" left="394" top="435" width="208">
-      </box>
+    <face height="208" left="394" top="435" width="208">
+      </face>
+          <crop height="208" left="394" top="435" width="208">
+      </crop>
   </image>
   <image file="me_2011_0.jpg">
-    <box height="315" left="126" top="97" width="315">
-      </box>
+    <face height="315" left="126" top="97" width="315">
+      </face>
+    <crop height="315" left="126" top="97" width="315">
+      </crop>
   </image>
   <image file="me_2011_1.jpg">
-    <box height="231" left="357" top="492" width="231">
-      </box>
+    <face height="231" left="357" top="492" width="231">
+      </face>
+    <crop height="231" left="357" top="492" width="231">
+      </crop>
    </image>
   <image file="me_2012.jpg">
-    <box height="199" left="476" top="171" width="199">
-      </box>
+    <face height="199" left="476" top="171" width="199">
+      </face>
+    <crop height="199" left="476" top="171" width="199">
+      </crop>
    </image>
   <image file="me_2013.jpg">
-    <box height="762" left="863" top="126" width="762">
-      </box>
+    <face height="762" left="863" top="126" width="762">
+      </face>
+    <crop height="762" left="863" top="126" width="762">
+      </crop>
    </image>
   <image file="me_2014_2.jpg">
-    <box height="186" left="835" top="460" width="186">
-      </box>
+    <face height="186" left="835" top="460" width="186">
+      </face>
+    <crop height="186" left="835" top="460" width="186">
+      </crop>
    </image>
   <image file="me_2015.jpg">
-    <box height="422" left="205" top="110" width="422">
-      </box>
+    <face height="422" left="205" top="110" width="422">
+      </face>
+    <crop height="422" left="205" top="110" width="422">
+      </crop>
    </image>
   <image file="me_2016.jpg">
-    <box height="403" left="62" top="18" width="403">
-      </box>
+    <face height="403" left="62" top="18" width="403">
+      </face>
+    <crop height="403" left="62" top="18" width="403">
+      </crop>
    </image>
   <image file="me_2017_0.jpg">
-    <box height="253" left="301" top="171" width="253">
-      </box>
+    <face height="253" left="301" top="171" width="253">
+      </face>
+    <crop height="253" left="301" top="171" width="253">
+      </crop>
    </image>
   <image file="me_2017_1.jpg">
-    <box height="293" left="90" top="140" width="293">
-      </box>
+    <face height="293" left="90" top="140" width="293">
+      </face>
+    <crop height="293" left="90" top="140" width="293">
+      </crop>
    </image>
 
   <image file="me_2018.jpg">
-    <box height="458" left="580" top="277" width="458">
-      </box>
+    <face height="458" left="580" top="277" width="458">
+      </face>
+    <crop height="458" left="580" top="277" width="458">
+      </crop>
    </image>
   <image file="me_2019_0.jpg">
-    <box height="979" left="826" top="380" width="979">
-      </box>
+    <face height="979" left="826" top="380" width="979">
+      </face>
+    <crop height="979" left="826" top="380" width="979">
+      </crop>
    </image>
   <image file="me_2019_1.jpg">
-    <box height="212" left="621" top="740" width="212">
-      </box>
+    <face height="212" left="621" top="740" width="212">
+      </face>
+    <crop height="212" left="621" top="740" width="212">
+      </crop>
    </image>
   <image file="me_2020_0.jpg">
-    <box height="307" left="425" top="164" width="307">
-      </box>
+    <face height="307" left="425" top="164" width="307">
+      </face>
+    <crop height="307" left="425" top="164" width="307">
+      </crop>
    </image>
      <image file="me_2020_1.jpg">
-    <box height="529" left="304" top="253" width="529">
-      </box>
+    <face height="529" left="304" top="253" width="529">
+      </face>
+    <crop height="529" left="304" top="253" width="529">
+      </crop>
    </image>
 </images>
 </dataset>

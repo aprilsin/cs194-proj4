@@ -315,7 +315,7 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
     assert len(imgs) == len(keypts)
     frames = []
     for i in range(len(imgs) - 1):
-        print(======= {i} =======)
+        print(f"======= {i} =======")
         imgA = imgs[i]
         imgB = imgs[i + 1]
         ptsA = keypts[i]
@@ -341,7 +341,7 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
             curr_frame, _, _ = compute_middle_object(imgA, imgB, ptsA, ptsB, 1 - alpha)
             print(f"Frame {i} morph time with alpha {alpha}:", time.time() - start)
             frames.append(curr_frame)
-    
+
     print("Saving video from {len(frames)} frames.")
     metadata = {"title": "Giant Morph Video", "artist": "Me = April Sin"}
     writer = animation.FFMpegWriter(fps=fps, metadata=metadata, bitrate=1800)
@@ -350,5 +350,6 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
             assert_img_type(frame)
             plt.imshow(frame)
             writer.grab_frame()
+
 
 #     return frames
