@@ -50,6 +50,12 @@ Triangle = np.ndarray
 def to_img_arr(x: ToImgArray) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return img_as_float(x).clip(0, 1)
+    elif isinstance(x,torch.Tensor):
+        if x.ndim==4: #batch
+            #nchw to nhwc
+            return x.cpu().detach().permute(0,2,3,1).numpy()
+        elif x.ndim==3: #single image
+            return x.cpu().detach().permute(1,2,0).numpy()
     elif isinstance(x, (str, Path, os.PathLike)):
         x = Path(x)
         if x.suffix in (".jpeg", ".jpg"):
@@ -64,6 +70,8 @@ def to_img_arr(x: ToImgArray) -> np.ndarray:
 def to_points(x: ToPoints) -> np.ndarray:
     if isinstance(x, np.ndarray):
         return x
+    elif isinstance(x,torch.Tensor):
+        return x.cpu().detach().numpy()
     elif isinstance(x, (str, Path, os.PathLike)):
         x = Path(x)
         if x.suffix in (".pkl", ".p"):

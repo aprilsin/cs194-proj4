@@ -312,7 +312,7 @@ def compute_morph_video(
 
 
 def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
-
+    assert len(imgs) == len(keypts)
     frames = []
     for i in range(len(imgs) - 1):
         imgA = imgs[i]
@@ -349,4 +349,4 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
             plt.imshow(frame)
             writer.grab_frame()
 
-    return frames
+#     return frames

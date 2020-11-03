@@ -5,6 +5,7 @@ import os
 import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
+import skimage.io as skio
 from pathlib import Path
 from typing import (
     List,
@@ -320,8 +321,8 @@ class XmlSample:
         self.hr, self.wr = height_ratio, width_ratio
 
     def load_img(self):
-        # load image from file
         img_name = self.root / self.filename.attrib["file"]
+        # load image from file
         img = load_img(img_name)
         assert_img(img)
         return img
@@ -634,9 +635,16 @@ class MePicsSet(Dataset):
         assert_img(img)
         return img
 
-    def get_original_img(self, idx: int):
+    def get_original_img(self, idx: int, cropped=False):
         sample = self.samples[idx]
-        return sample.load_img()
+        img_path = sample.root / sample.get_name()
+        img =  skio.imread(img_path)
+        if cropped:
+            top, left, height, width = sample.get_box()
+            cropped = img[top:top+width, left:left+width, :]
+            resized = ST.resize(cropped, (500, 500))
+            return resized
+        return img
 
 def save_kaggle(keypts1008: List) -> None:
     """Saves predicted keypoints of Part 3 test set as a csv file.
