@@ -59,7 +59,7 @@ class BlurFaceFinder(Module):
         self.C4 = Conv2d(30, 30, 3)
         self.C5 = Conv2d(30, 25, 3)
 
-        self.FC1 = Linear(25 * 54* 74,128)
+        self.FC1 = Linear(25 * 54 * 74, 128)
         self.FC2 = Linear(128, 2 * 58)
 
     def forward(self, img):
@@ -97,6 +97,7 @@ class BlurFaceFinder(Module):
 
         return x
 
+
 class FaceFinder(Module):
     def __init__(self):
         super().__init__()
@@ -109,14 +110,14 @@ class FaceFinder(Module):
         self.C4 = Conv2d(30, 30, 3)
         self.C5 = Conv2d(30, 25, 3)
 
-        self.FC1 = Linear(25 * 21* 30,128)
+        self.FC1 = Linear(25 * 21 * 30, 128)
         self.FC2 = Linear(128, 2 * 58)
 
     def forward(self, img):
 
         dev = self.C1.weight.device
         r = ReLU().to(dev)
-        mp3=MaxPool2d(3).to(dev)
+        mp3 = MaxPool2d(3).to(dev)
 
         x = self.C1(img)
         x = r(x)

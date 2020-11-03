@@ -94,7 +94,6 @@ def train_and_validate(
     all_valid_loss = []
     for epoch in trange(epochs):
 
-
         model, train_loss = train(train_loader, model, learn_rate)
         print(f"{epoch = }: {train_loss = }")
 

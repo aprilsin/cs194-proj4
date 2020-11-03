@@ -5,7 +5,6 @@ import os
 import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
-import skimage.io as skio
 from pathlib import Path
 from typing import (
     List,
@@ -14,6 +13,7 @@ from typing import (
 
 import numpy as np
 import pandas as pd
+import skimage.io as skio
 import skimage.transform as ST
 import torch
 import torchvision.transforms as TT
@@ -326,10 +326,10 @@ class XmlSample:
         img = load_img(img_name)
         assert_img(img)
         return img
-    
+
     def get_name(self):
-        return  self.filename.attrib["file"]
-    
+        return self.filename.attrib["file"]
+
     def load_pts(self):
         # load keypoints from file
         keypts = []
@@ -339,7 +339,7 @@ class XmlSample:
             keypts.append([x_coordinate, y_coordinate])
         keypts = torch.as_tensor(keypts, dtype=torch.float32)
         return keypts
-    
+
     def get_box(self, adjust=True):
 
         box = self.filename[0].attrib
@@ -406,7 +406,8 @@ class MyXmlTestSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
         super().__init__(my_test_xml, filename, hr, wr)
         self.root = MY_DIR
-        
+
+
 class MeXmlSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
         super().__init__(me_xml, filename, hr, wr)
@@ -601,7 +602,8 @@ class MyTestSet(Dataset):
     def get_original_img(self, idx: int):
         sample = self.samples[idx]
         return sample.load_img()
-    
+
+
 class MePicsSet(Dataset):
     def __init__(self) -> None:
         super().__init__()
@@ -609,7 +611,7 @@ class MePicsSet(Dataset):
         tree = ET.parse(me_xml)
         test_files = tree.getroot()[1]
         assert len(test_files) == 16, len(test_files)
-        
+
         self.samples = [MeXmlSample(filename=f, hr=1.0, wr=1.0) for f in test_files]
 
     def __len__(self):
@@ -638,13 +640,16 @@ class MePicsSet(Dataset):
     def get_original_img(self, idx: int, cropped=False):
         sample = self.samples[idx]
         img_path = sample.root / sample.get_name()
-        img =  skio.imread(img_path)
+        img = skio.imread(img_path)
         if cropped:
             top, left, height, width = sample.get_box()
-            cropped = img[top:top+width, left:left+width, :]
-            resized = ST.resize(cropped, (500, 500))
+            cropped = img[top : top + width, left : left + width, :]
+            resized = ST.resize(
+                cropped, (500, 500)
+            )  # make them all the same size so they can be passed into morphing sequence
             return resized
         return img
+
 
 def save_kaggle(keypts1008: List) -> None:
     """Saves predicted keypoints of Part 3 test set as a csv file.
