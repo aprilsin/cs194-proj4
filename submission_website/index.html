@@ -228,22 +228,25 @@
     <div class="column_4">
       <img class="part3_2" src="output/p3_mc3.png" alt="My Collection 3" />
     </div>
-    <div class="column_4">
+      <div class="column_4">
       <img class="part3_2" src="output/p3_mc4.png" alt="My Collection 3" />
     </div>
   </div>
 
 
   <h3>Bells and Whisles</h3>
-  <p>Using anti-aliased max pool from the <a href="https://richzhang.github.io/antialiased-cnns">work of Richard
-      Zhang</a> in replace of <code>torch.nn.MaxPool2d</code>, I was able to produce better results for part 2.<br>
-    We can see that at a earlier epoch, the loss drops off already.</p>
+  <p>Using anti-aliased max pool <code>antialiased_cnns.BlurPool</code> from the <a href="https://richzhang.github.io/antialiased-cnns">work of Richard
+      Zhang</a> (<a href="https://github.com/adobe/antialiased-cnns">Github</a>) in replace of <code>torch.nn.MaxPool2d</code>, I was not able to produce better results for part 2.<br> Maybe it is because I did not do a lot of data augmentation.</p>
   </div>
   <div class="row">
     <div class="column_3">
       <img src="output/p2_loss_blur.png" class="plot" alt="Part 2 Accuracy Plot" />
-    </div>
+      <figcaption>Accuracy from before, without anti-aliased cnn.</figcaption>
   </div>
+  </div>
+
+  I also used the trained model from part 3 to find keypoitns of my face from various years, and created a morphing video out of it!
+  Here it is: <a href="https://youtu.be/kUgrwwMqg2k">https://youtu.be/kUgrwwMqg2k</a>
 </body>
 
 </html>
