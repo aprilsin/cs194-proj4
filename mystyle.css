@@ -47,6 +47,18 @@ img {
   max-height: 380px;
 }
 
+img.plot {
+  width: 500px !important;
+  max-height: None !important;
+}
+
+img.part3 {
+  width: 250px !important;
+}
+img.part3_2 {
+  width: 260px !important;
+}
+
 figcaption {
   margin: 10px 0 0 0;
   font-family: "Actor", sans-serif;
