@@ -3,14 +3,7 @@ import torch
 import torchvision
 from antialiased_cnns import BlurPool
 from torch import nn
-from torch.nn import (
-    Conv2d,
-    Flatten,
-    Linear,
-    MaxPool2d,
-    Module,
-    ReLU,
-)
+from torch.nn import Conv2d, Flatten, Linear, MaxPool2d, Module, ReLU
 
 
 class NoseFinder(Module):

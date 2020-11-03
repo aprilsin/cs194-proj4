@@ -352,4 +352,3 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
             plt.imshow(frame)
             writer.grab_frame()
     print("Video saved. (time taken = {time.time() - start})")
-    

@@ -1,7 +1,6 @@
 """ Global Variables """
 import torch
 
-
 NUM_POINTS = 41
 NUM_CHANNELS = 3
 NUM_FRAMES = 20
