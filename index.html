@@ -11,7 +11,7 @@
 </head>
 
 <body>
-  <header text-align="right"> Fall 2020</header> 
+  <header text-align="right"> Fall 2020</header>
   <h1>CS194 Project 4: Facial Keypoint Detection with Neural Networks</h1>
 
   <h2>April Sin</h2>
@@ -89,15 +89,12 @@
       <img src="output/p1_f3.png" alt="Fail 3" />
     </div>
   </div>
-  <p>TODO -- Some reasons why these images failed could be because of shadows and the pose of the person. Since the
-    model is
-    mostly trained on images without arms showing and backgrounds with little shadow, it is not good at detecting the
-    face then those things occur in the input image.</p>
+  <p>Since the model is
+    mostly trained on images where the nose is near the center of the image, it is not good at detecting the
+    nose when a is not standing at the very center, and the person's head is rotated.</p>
   <h4>Training and Validation Accuracy</h4>
   <div class="column">
     <img src="output/p1_loss.png" alt="Part 1 Accuracy" />
-    <img src="output/p1_loss_train.png"/>
-    <img src="output/p1_loss_valid.png"/>
   </div>
 
 
@@ -171,14 +168,12 @@
   <h4>Training and Validation Accuracy</h4>
   <div class="column">
     <img src="output/p2_loss.png" alt="Part 2 Accuracy Plot" />
-      <img src="output/p2_loss_train.png"/>
-      <img src="output/p2_loss_valid.png"/>
   </div>
   <h4>Learned Filters Visualized</h4>
   <p>Here are the learned filters from the first two layers of my model.</p>
   <div class="row">
     <div class="column_5">
-      <img src="output/p2_filter1.png" alt="first conv layer filters" height="85%" width="85%"/>
+      <img src="output/p2_filter1.png" alt="first conv layer filters" height="85%" width="85%" />
       <figcaption>first conv layer filters</figcaption>
     </div>
     <div class="column_5">
@@ -242,9 +237,7 @@
   </div>
   <div class="row">
     <div class="column_3">
-      <img src="output/p2_loss.png" alt="Part 2 Accuracy Plot" />
-      <img src="output/p2_loss_train.png"/>
-      <img src="output/p2_loss_valid.png"/>
+      <img src="output/p2_loss.png" />
       <figcaption>Accuracy from before, without anti-aliased cnn.</figcaption>
     </div>
     <div class="column_3">
