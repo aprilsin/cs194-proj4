@@ -5,15 +5,12 @@ import os
 import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
-import skimage.io as skio
 from pathlib import Path
-from typing import (
-    List,
-    Tuple,
-)
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+import skimage.io as skio
 import skimage.transform as ST
 import torch
 import torchvision.transforms as TT
@@ -21,8 +18,7 @@ from PIL import Image
 from torch import Tensor
 from torch.utils.data import Dataset
 
-from my_types import assert_img, assert_points, assert_img_type, to_img_arr
-
+from my_types import assert_img, assert_img_type, assert_points, to_img_arr
 
 DATA_DIR = Path("data")
 OUT_DIR = Path("output")

@@ -6,7 +6,6 @@ from torch import Tensor
 
 import cnn
 
-
 ToDisplayImage = Union[Tensor, np.ndarray]
 
 
