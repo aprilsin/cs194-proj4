@@ -5,7 +5,7 @@
     <box height="287" left="54" top="810" width="287">
       </box>
   </image>
-  <image file="me_2003.jpg">
+  <image file="me_2003.jpeg">
     <box height="208" left="394" top="435" width="208">
       </box>
   </image>
@@ -14,7 +14,7 @@
       </box>
   </image>
   <image file="me_2011_1.jpg">
-    <box height="384" left="298" top="396" width="384">
+    <box height="231" left="357" top="492" width="231">
       </box>
    </image>
   <image file="me_2012.jpg">
@@ -26,7 +26,7 @@
       </box>
    </image>
   <image file="me_2014_2.jpg">
-    <box height="302" left="778" top="413" width="302">
+    <box height="186" left="835" top="460" width="186">
       </box>
    </image>
   <image file="me_2015.jpg">
@@ -38,24 +38,24 @@
       </box>
    </image>
   <image file="me_2017_0.jpg">
-    <box height="349" left="251" top="120" width="349">
+    <box height="253" left="301" top="171" width="253">
       </box>
    </image>
   <image file="me_2017_1.jpg">
-    <box height="475" left="41" top="72" width="475">
+    <box height="293" left="90" top="140" width="293">
       </box>
    </image>
 
   <image file="me_2018.jpg">
-    <box height="552" left="564" top="245" width="552">
+    <box height="458" left="580" top="277" width="458">
       </box>
    </image>
   <image file="me_2019_0.jpg">
-    <box height="1703" left="517" top="178" width="1703">
+    <box height="979" left="826" top="380" width="979">
       </box>
    </image>
   <image file="me_2019_1.jpg">
-    <box height="393" left="530" top="698" width="393">
+    <box height="212" left="621" top="740" width="212">
       </box>
    </image>
   <image file="me_2020_0.jpg">
@@ -63,7 +63,7 @@
       </box>
    </image>
      <image file="me_2020_1.jpg">
-    <box height="979" left="120" top="109" width="979">
+    <box height="529" left="304" top="253" width="529">
       </box>
    </image>
 </images>
