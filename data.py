@@ -35,7 +35,10 @@ train_xml = IBUG_ROOT / "labels_ibug_300W_train.xml"
 test_xml = IBUG_ROOT / "labels_ibug_300W_test_parsed.xml"
 
 MY_DIR = DATA_DIR / "my_collection"
-my_xml = MY_DIR / "my_samples.xml"
+my_test_xml = MY_DIR / "my_samples.xml"
+
+ME_DIR = DATA_DIR / "me"
+me_xml = ME_DIR / "me.xml"
 
 OUT_DIR.mkdir(exist_ok=True)
 assert DATA_DIR.exists()
@@ -322,7 +325,10 @@ class XmlSample:
         img = load_img(img_name)
         assert_img(img)
         return img
-
+    
+    def get_name(self):
+        return  self.filename.attrib["file"]
+    
     def load_pts(self):
         # load keypoints from file
         keypts = []
@@ -332,7 +338,7 @@ class XmlSample:
             keypts.append([x_coordinate, y_coordinate])
         keypts = torch.as_tensor(keypts, dtype=torch.float32)
         return keypts
-
+    
     def get_box(self, adjust=True):
 
         box = self.filename[0].attrib
@@ -397,8 +403,13 @@ class XmlTestSample(XmlSample):
 
 class MyXmlTestSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
-        super().__init__(my_xml, filename, hr, wr)
+        super().__init__(my_test_xml, filename, hr, wr)
         self.root = MY_DIR
+        
+class MeXmlSample(XmlSample):
+    def __init__(self, filename: ET.Element, hr: float, wr: float):
+        super().__init__(me_xml, filename, hr, wr)
+        self.root = ME_DIR
 
 
 class LargeTrainDataset(Dataset):
@@ -557,7 +568,7 @@ class MyTestSet(Dataset):
     def __init__(self) -> None:
         super().__init__()
 
-        tree = ET.parse(my_xml)
+        tree = ET.parse(my_test_xml)
         test_files = tree.getroot()[1]
         assert len(test_files) == 4, len(test_files)
 
@@ -589,7 +600,43 @@ class MyTestSet(Dataset):
     def get_original_img(self, idx: int):
         sample = self.samples[idx]
         return sample.load_img()
+    
+class MePicsSet(Dataset):
+    def __init__(self) -> None:
+        super().__init__()
 
+        tree = ET.parse(me_xml)
+        test_files = tree.getroot()[1]
+        assert len(test_files) == 16, len(test_files)
+
+        self.samples = [MeXmlSample(filename=f, hr=1.0, wr=1.0) for f in test_files]
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx: int):
+        sample = self.samples[idx]
+        img = sample.load_img()
+
+        # crop image
+        top, left, height, width = sample.get_box()
+        img = TT.functional.crop(
+            img,
+            top=top,
+            left=left,
+            height=height,
+            width=width,
+        )
+        assert_img(img)
+
+        img = part3_transform(img)
+
+        assert_img(img)
+        return img
+
+    def get_original_img(self, idx: int):
+        sample = self.samples[idx]
+        return sample.load_img()
 
 def save_kaggle(keypts1008: List) -> None:
     """Saves predicted keypoints of Part 3 test set as a csv file.
