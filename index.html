@@ -37,14 +37,14 @@
   <p>Here are some sampled images and the truth nose keypoint:</p>
   <div class="row">
     <div class="column_4">
-      <img src="output/p1_d1.jpg" alt="Sample 1" />
-      {% comment %} <img src="data/imm_face_db/01-1m.jpg" alt="Sample 1" /> {% endcomment %}
+      <img src="output/p1_d1.png" alt="Sample 1" />
+      {% comment %} <img src="data/imm_face_db/01-1m.png" alt="Sample 1" /> {% endcomment %}
     </div>
     <div class="column_4">
-      <img src="output/p1_d2.jpg" alt="Sample 2" />
+      <img src="output/p1_d2.png" alt="Sample 2" />
     </div>
     <div class="column_4">
-      <img src="output/p1_d3.jpg" alt="Sample 3" />
+      <img src="output/p1_d3.png" alt="Sample 3" />
     </div>
   </div>
 
@@ -68,25 +68,25 @@
   <div class="row">
     <div class="column">Success Cases</div>
     <div class="column">
-      <img src="output/p1_s1.jpg" alt="Success 1" />
+      <img src="output/p1_s1.png" alt="Success 1" />
     </div>
     <div class="column">
-      <img src="output/p1_s2.jpg" alt="Success 2" />
+      <img src="output/p1_s2.png" alt="Success 2" />
     </div>
     <div class="column">
-      <img src="output/p1_s3.jpg" alt="Success 3" />
+      <img src="output/p1_s3.png" alt="Success 3" />
     </div>
   </div>
   <div class="row">
     <div class="column">Failure Cases</div>
     <div class="column">
-      <img src="output/p1_f1.jpg" alt="Fail 1" />
+      <img src="output/p1_f1.png" alt="Fail 1" />
     </div>
     <div class="column">
-      <img src="output/p1_f2.jpg" alt="Fail 2" />
+      <img src="output/p1_f2.png" alt="Fail 2" />
     </div>
     <div class="column">
-      <img src="output/p1_f3.jpg" alt="Fail 3" />
+      <img src="output/p1_f3.png" alt="Fail 3" />
     </div>
   </div>
   <p>TODO -- Some reasons why these images failed could be because of shadows and the pose of the person. Since the
@@ -95,7 +95,9 @@
     face then those things occur in the input image.</p>
   <h4>Training and Validation Accuracy</h4>
   <div class="column">
-    <img src="output/p1_loss.jpg" alt="Part 1 Accuracy" />
+    <img src="output/p1_loss.png" alt="Part 1 Accuracy" />
+    <img src="output/p1_loss_train.png"/>
+    <img src="output/p1_loss_valid.png"/>
   </div>
 
 
@@ -112,13 +114,13 @@
   <p>Here are some sampled images and the ground-truth face keypoint:</p>
   <div class="row">
     <div class="column_4">
-      <img src="output/p2_d1.jpg" alt="Sample 1" />
+      <img src="output/p2_d1.png" alt="Sample 1" />
     </div>
     <div class="column_4">
-      <img src="output/p2_d2.jpg" alt="Sample 2" />
+      <img src="output/p2_d2.png" alt="Sample 2" />
     </div>
     <div class="column_4">
-      <img src="output/p2_d3.jpg" alt="Sample 3" />
+      <img src="output/p2_d3.png" alt="Sample 3" />
     </div>
   </div>
   <h4>CNN Model</h4>
@@ -141,25 +143,25 @@
   <div class="row">
     <div class="column_5">Success Cases</div>
     <div class="column">
-      <img src="output/p2_s2.jpg" alt="Success 1" />
+      <img src="output/p2_s2.png" alt="Success 1" />
     </div>
     <div class="column">
-      <img src="output/p2_s2.jpg" alt="Success 2" />
+      <img src="output/p2_s2.png" alt="Success 2" />
     </div>
     <div class="column">
-      <img src="output/p2_s3.jpg" alt="Success 3" />
+      <img src="output/p2_s3.png" alt="Success 3" />
     </div>
   </div>
   <div class="row">
     <div class="column_5">Failure Cases</div>
     <div class="column">
-      <img src="output/p2_f1.jpg" alt="Fail 1" />
+      <img src="output/p2_f1.png" alt="Fail 1" />
     </div>
     <div class="column">
-      <img src="output/p2_f2.jpg" alt="Fail 2" />
+      <img src="output/p2_f2.png" alt="Fail 2" />
     </div>
     <div class="column">
-      <img src="output/p2_f3.jpg" alt="Fail 3" />
+      <img src="output/p2_f3.png" alt="Fail 3" />
     </div>
   </div>
   <p> TODO --- Some reasons why these images failed could be because of shadows and the pose of the person. Since the
@@ -168,17 +170,19 @@
     face then those things occur in the input image.</p>
   <h4>Training and Validation Accuracy</h4>
   <div class="column">
-    <img src="output/p2_loss.jpg" alt="Part 2 Accuracy Plot" />
+    <img src="output/p2_loss.png" alt="Part 2 Accuracy Plot" />
+      <img src="output/p2_loss_train.png"/>
+      <img src="output/p2_loss_valid.png"/>
   </div>
   <h4>Learned Filters Visualized</h4>
-  <p>TODO -- write something</p>
+  <p>Here are the learned filters from the first two layers of my model.</p>
   <div class="row">
     <div class="column_5">
-      <img src="output/p2_filter1.jpg" alt="first conv layer filters" />
+      <img src="output/p2_filter1.png" alt="first conv layer filters" height="85%" width="85%"/>
       <figcaption>first conv layer filters</figcaption>
     </div>
     <div class="column_5">
-      <img src="output/p2_filter2.jpg" alt="second conv layer filters" />
+      <img src="output/p2_filter2.png" alt="second conv layer filters" />
       <figcaption>second conv layer filters</figcaption>
     </div>
   </div>
@@ -196,37 +200,37 @@
   <h4>Here are the results:</h4>
   <div class="row">
     <div class="column">
-      <img src="output/p3_s2.jpg" alt="Success 1" />
+      <img src="output/p3_s1.png" alt="Success 1" />
     </div>
     <div class="column">
-      <img src="output/p3_s2.jpg" alt="Success 2" />
+      <img src="output/p3_s2.png" alt="Success 2" />
     </div>
     <div class="column">
-      <img src="output/p3_s3.jpg" alt="Success 3" />
+      <img src="output/p3_s3.png" alt="Success 3" />
     </div>
   </div>
   <div class="row">
     <div class="column">
-      <img src="output/p3_s4.jpg" alt="Success 3" />
+      <img src="output/p3_s4.png" alt="Success 3" />
     </div>
     <div class="column">
-      <img src="output/p3_s5.jpg" alt="Success 3" />
+      <img src="output/p3_s5.png" alt="Success 3" />
     </div>
     <div class="column">
-      <img src="output/p3_s6.jpg" alt="Success 3" />
+      <img src="output/p3_s6.png" alt="Success 3" />
     </div>
   </div>
   <h4>My Collection :)</h4>
   </div>
   <div class="row">
     <div class="column">
-      <img src="output/mc1.jpg" alt="My Collection 1" />
+      <img src="output/mc1.png" alt="My Collection 1" />
     </div>
     <div class="column">
-      <img src="output/mc2.jpg" alt="My Collection 2" />
+      <img src="output/mc2.png" alt="My Collection 2" />
     </div>
     <div class="column">
-      <img src="output/mc3.jpg" alt="My Collection 3" />
+      <img src="output/mc3.png" alt="My Collection 3" />
     </div>
   </div>
 
@@ -238,11 +242,13 @@
   </div>
   <div class="row">
     <div class="column_3">
-      <img src="output/p2_loss.jpg" alt="Part 2 Accuracy Plot" />
+      <img src="output/p2_loss.png" alt="Part 2 Accuracy Plot" />
+      <img src="output/p2_loss_train.png"/>
+      <img src="output/p2_loss_valid.png"/>
       <figcaption>Accuracy from before, without anti-aliased cnn.</figcaption>
     </div>
     <div class="column_3">
-      <img src="output/anti_loss.jpg" alt="Anti-aliased Accuracy Plot" />
+      <img src="output/anti_loss.png" alt="Anti-aliased Accuracy Plot" />
       <figcaption>Accuracy with anti-aliased cnn.</figcaption>
     </div>
   </div>
