@@ -4,10 +4,7 @@ import copy
 import math
 import time
 from pathlib import Path
-from typing import (
-    Tuple,
-    Union,
-)
+from typing import Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,15 +14,11 @@ from matplotlib import animation
 from scipy import interpolate
 from scipy.spatial import Delaunay
 from skimage import transform
-from skimage.util import (
-    img_as_float,
-    img_as_ubyte,
-)
+from skimage.util import img_as_float, img_as_ubyte
 
 import utils
 from constants import *
 from my_types import *
-
 
 #######################
 #    DEFINE SHAPES    #
@@ -348,7 +341,8 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
             curr_frame, _, _ = compute_middle_object(imgA, imgB, ptsA, ptsB, 1 - alpha)
             print(f"Frame {i} morph time with alpha {alpha}:", time.time() - start)
             frames.append(curr_frame)
-    
+
+    start = time.time()
     print("Saving video from {len(frames)} frames.")
     metadata = {"title": "Giant Morph Video", "artist": "Me = April Sin"}
     writer = animation.FFMpegWriter(fps=fps, metadata=metadata, bitrate=1800)
@@ -357,5 +351,5 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
             assert_img_type(frame)
             plt.imshow(frame)
             writer.grab_frame()
-
-#     return frames
+    print("Video saved. (time taken = {time.time() - start})")
+    
