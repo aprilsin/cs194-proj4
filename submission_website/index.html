@@ -91,7 +91,7 @@
   <p>Some reasons why these images failed could be because of the nose is generally around the center of an image. The
     model is not good at detecting the
     nose when it is not the case -- when the person's head is rotated, and especially for the case when the person is
-    not standing at the middel and his head is very rotated.</p>
+    not standing at the middle and his head is very rotated.</p>
   <h4>Training and Validation Accuracy</h4>
   <div class="column">
     <img class="plot" src="output/p1_loss.png" alt="Part 1 Accuracy" />
@@ -190,7 +190,7 @@
   <p>It would take forever to run if we were to train our model with our laptops. Luckily, we have access to GPUs such
     as Google
     Colab. With <code>batch_size = 512</code>, it took about an hour to run!</p>
-  <p>For the CNN, I used <code>ResNet18</code>. And to train, I again used MSELos and the Adam optimizer with
+  <p>For the CNN, I used <code>ResNet18</code>. And to train, I again used MSELoss and the Adam optimizer with
     <code>learning_rate = 3e-4</code>. But this time I have <code>num_epochs = 100</code>.
   </p>
   <h4>Here are the results:</h4>
@@ -228,24 +228,28 @@
     <div class="column_4">
       <img class="part3_2" src="output/p3_mc3.png" alt="My Collection 3" />
     </div>
-      <div class="column_4">
+    <div class="column_4">
       <img class="part3_2" src="output/p3_mc4.png" alt="My Collection 3" />
     </div>
   </div>
 
 
   <h3>Bells and Whisles</h3>
-  <p>Using anti-aliased max pool <code>antialiased_cnns.BlurPool</code> from the <a href="https://richzhang.github.io/antialiased-cnns">work of Richard
-      Zhang</a> (<a href="https://github.com/adobe/antialiased-cnns">Github</a>) in replace of <code>torch.nn.MaxPool2d</code>, I was not able to produce better results for part 2.<br> Maybe it is because I did not do a lot of data augmentation.</p>
+  <p>Using anti-aliased max pool <code>antialiased_cnns.BlurPool</code> from the <a
+      href="https://richzhang.github.io/antialiased-cnns">work of Richard
+      Zhang</a> (<a href="https://github.com/adobe/antialiased-cnns">Github</a>) in replace of
+    <code>torch.nn.MaxPool2d</code>, I was able to produce better results for part 2. As we can see from the graph, the
+    loss drop quicker than before.</p>
   </div>
   <div class="row">
     <div class="column_3">
       <img src="output/p2_loss_blur.png" class="plot" alt="Part 2 Accuracy Plot" />
       <figcaption>Accuracy from before, without anti-aliased cnn.</figcaption>
-  </div>
+    </div>
   </div>
 
-  I also used the trained model from part 3 to find keypoitns of my face from various years, and created a morphing video out of it!
+  I also used the trained model from part 3 to find keypoitns of my face from various years, and created a morphing
+  video out of it!
   Here it is: <a href="https://youtu.be/kUgrwwMqg2k">https://youtu.be/kUgrwwMqg2k</a>
 </body>
 

@@ -100,7 +100,6 @@ def part1_transform(image, keypoints) -> Tuple[Tensor, Tensor]:
 
 
 def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
-
     return image, keypoints  # do nothing
 
 
@@ -208,6 +207,10 @@ def part2_transform(image, keypoints) -> Tuple[Tensor, Tensor]:
 
 def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
 
+    # TODO add color jitter
+    # TODO add random crop
+    # TODO add shifting
+    
     # convert tensors to numpy arrays to use skimage
     image, keypoints = image.squeeze().numpy(), keypoints.numpy()
     h, w = image.shape[-2:]

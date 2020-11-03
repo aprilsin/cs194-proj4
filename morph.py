@@ -315,7 +315,7 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
     assert len(imgs) == len(keypts)
     frames = []
     for i in range(len(imgs) - 1):
-        print(======= {i} =======)
+        print("======= {i} =======")
         imgA = imgs[i]
         imgB = imgs[i + 1]
         ptsA = keypts[i]
