@@ -3,7 +3,6 @@ from typing import Union
 import matplotlib.pyplot as plt
 import numpy as np
 from torch import Tensor
-
 import cnn
 
 
@@ -65,6 +64,8 @@ def show_keypoints(
     truth_points: Union[Tensor, np.ndarray] = None,
     pred_points: Union[Tensor, np.ndarray] = None,
     color: bool = False,
+    marker_size: int = 35,
+    marker_shape: str = "x",
 ) -> None:
     """Show image with keypoints."""
 
@@ -88,11 +89,19 @@ def show_keypoints(
     plt.imshow(image, cmap)
     if truth_points is not None:
         plt.scatter(
-            truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x"
+            truth_points[:, 0] * w,
+            truth_points[:, 1] * h,
+            s=marker_size,
+            c="g",  # green for ground truth points
+            marker=marker_shape,
         )
     if pred_points is not None:
         plt.scatter(
-            pred_points[:, 0] * w, pred_points[:, 1] * h, s=35, c="r", marker="x"
+            pred_points[:, 0] * w,
+            pred_points[:, 1] * h,
+            s=marker_size,
+            c="r",  # red for predicted points
+            marker=marker_shape,
         )
     plt.pause(0.001)  # pause a bit so that plots are updated
     plt.show()
@@ -125,16 +134,17 @@ def show_progress_both(
 
     assert training_loss.ndim == 2
     assert validation_loss.ndim == 2
-    fig, ax = plt.subplots()
 
-    ax.set_title(title)
-    ax.set_ylabel("loss")
-    ax.set_xlabel("epochs")
-    ax.set_xticks(x)
-    ax.plot(np.int64(training_loss[:, 0]), training_loss[:, 1], label="Train")
-    ax.plot(np.int64(validation_loss[:, 0]), validation_loss[:, 1], label="Val")
-    ax.legend()
-    return fig
+    x = np.int64(training_loss[:, 0])
+    x = np.int64(validation_loss[:, 0])
+    plt.figure()
+    plt.title(title)
+    plt.ylabel("loss")
+    plt.xlabel("epochs")
+    plt.xticks(x)
+    plt.plot(training_loss[:, 1])
+    plt.plot(validation_loss[:, 1])
+    plt.show()
 
 
 # def print_epoch(ep, train_loss, valid_loss) -> None:
@@ -151,22 +161,32 @@ def show_progress_both(
 
 def make_filter_fig(conv_layer, num_x, num_y):
 
-    # permute is necessary to get channels in the right place for matplotlib
-    w = conv_layer.weight.detach().clone().permute(0, 2, 3, 1).numpy()
-
-    w = (w - w.min()) / (w.max() - w.min())
-    # reduce across channels (grayscale it) so you can plot more than 1D and 3D input.
-    w = w.mean(-1)
-    num_filters = len(w)
+    # get weights and make it a numpy array
+    w = conv_layer.weight.detach().numpy()
+    num_filters = w.shape[0]
     assert num_filters == num_x * num_y  # to make sure the filters will fit
 
     fig, axes = plt.subplots(num_x, num_y, sharex=True, sharey=True, figsize=(10, 10))
     for filter, ax in zip(w, axes.flat):
-        ax.imshow(filter)
-        ax.set_axis_off()
+        ax.imshow(filter, cmap="gray")
     return fig
 
 
+def show_filters_part1(model: cnn.NoseFinder):
+    all_conv_figs = []
+    conv_idxs = [0, 3, 6]
+    for i in conv_idxs:
+        make_filter_fig(model.model[i])
+    return all_conv_figs
+
+
 def show_filters_part2(model: cnn.FaceFinder):
-    model = model.cpu()
-    return [make_filter_fig(model.C1, 6, 3), make_filter_fig(model.C2, 6, 4)]
+    all_conv_figs = []
+    conv_idxs = [0, 3, 5, 8, 10]
+    for i in conv_idxs:
+        make_filter_fig(model.model[i])
+    return all_conv_figs
+
+
+def show_filters_part3(model: cnn.ResNet):
+    pass
