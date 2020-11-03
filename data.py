@@ -326,10 +326,10 @@ class XmlSample:
         img = load_img(img_name)
         assert_img(img)
         return img
-    
+
     def get_name(self):
-        return  self.filename.attrib["file"]
-    
+        return self.filename.attrib["file"]
+
     def load_pts(self):
         # load keypoints from file
         keypts = []
@@ -339,7 +339,7 @@ class XmlSample:
             keypts.append([x_coordinate, y_coordinate])
         keypts = torch.as_tensor(keypts, dtype=torch.float32)
         return keypts
-    
+
     def get_box(self, adjust=True):
 
         box = self.filename[0].attrib
@@ -400,17 +400,6 @@ class XmlValidSample(XmlSample):
 class XmlTestSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
         super().__init__(test_xml, filename, hr, wr)
-
-
-class MyXmlTestSample(XmlSample):
-    def __init__(self, filename: ET.Element, hr: float, wr: float):
-        super().__init__(my_test_xml, filename, hr, wr)
-        self.root = MY_DIR
-        
-class MeXmlSample(XmlSample):
-    def __init__(self, filename: ET.Element, hr: float, wr: float):
-        super().__init__(me_xml, filename, hr, wr)
-        self.root = ME_DIR
 
 
 class LargeTrainDataset(Dataset):
@@ -565,6 +554,19 @@ class LargeTestDataset(Dataset):  # works the same as training set
         return sample.load_img()
 
 
+def save_kaggle(keypts1008: List) -> None:
+
+#
+# My Collection
+#
+
+
+class MyXmlTestSample(XmlSample):
+    def __init__(self, filename: ET.Element, hr: float, wr: float):
+        super().__init__(my_test_xml, filename, hr, wr)
+        self.root = MY_DIR
+
+
 class MyTestSet(Dataset):
     def __init__(self) -> None:
         super().__init__()
@@ -601,7 +603,19 @@ class MyTestSet(Dataset):
     def get_original_img(self, idx: int):
         sample = self.samples[idx]
         return sample.load_img()
-    
+
+
+#
+# Me Growing Up - Morph Sequence
+#
+
+
+class MeXmlSample(XmlSample):
+    def __init__(self, filename: ET.Element, hr: float, wr: float):
+        super().__init__(me_xml, filename, hr, wr)
+        self.root = ME_DIR
+
+
 class MePicsSet(Dataset):
     def __init__(self) -> None:
         super().__init__()
@@ -609,7 +623,7 @@ class MePicsSet(Dataset):
         tree = ET.parse(me_xml)
         test_files = tree.getroot()[1]
         assert len(test_files) == 16, len(test_files)
-        
+
         self.samples = [MeXmlSample(filename=f, hr=1.0, wr=1.0) for f in test_files]
 
     def __len__(self):
@@ -638,15 +652,14 @@ class MePicsSet(Dataset):
     def get_original_img(self, idx: int, cropped=False):
         sample = self.samples[idx]
         img_path = sample.root / sample.get_name()
-        img =  skio.imread(img_path)
+        img = skio.imread(img_path)
         if cropped:
             top, left, height, width = sample.get_box()
-            cropped = img[top:top+width, left:left+width, :]
+            cropped = img[top : top + width, left : left + width, :]
             resized = ST.resize(cropped, (500, 500))
             return resized
         return img
 
-def save_kaggle(keypts1008: List) -> None:
     """Saves predicted keypoints of Part 3 test set as a csv file.
 
     keypts1008: List of 1008 tensors.
