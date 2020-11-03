@@ -572,7 +572,7 @@ class MyTestSet(Dataset):
         test_files = tree.getroot()[1]
         assert len(test_files) == 4, len(test_files)
 
-        self.samples = [MyXmlTestSample(filename=f, hr=1, wr=1) for f in test_files]
+        self.samples = [MyXmlTestSample(filename=f, hr=1.0, wr=1.0) for f in test_files]
 
     def __len__(self):
         return len(self.samples)
@@ -608,7 +608,7 @@ class MePicsSet(Dataset):
         tree = ET.parse(me_xml)
         test_files = tree.getroot()[1]
         assert len(test_files) == 16, len(test_files)
-
+        
         self.samples = [MeXmlSample(filename=f, hr=1.0, wr=1.0) for f in test_files]
 
     def __len__(self):
