@@ -6,10 +6,7 @@ import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
-from typing import (
-    List,
-    Tuple,
-)
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -21,11 +18,7 @@ from PIL import Image
 from torch import Tensor
 from torch.utils.data import Dataset
 
-from my_types import (
-    assert_img,
-    assert_points,
-)
-
+from my_types import assert_img, assert_img_type, assert_points, to_img_arr
 
 DATA_DIR = Path("data")
 OUT_DIR = Path("output")
@@ -100,6 +93,7 @@ def part1_transform(image, keypoints) -> Tuple[Tensor, Tensor]:
 
 
 def part1_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
+
     return image, keypoints  # do nothing
 
 
@@ -207,10 +201,6 @@ def part2_transform(image, keypoints) -> Tuple[Tensor, Tensor]:
 
 def part2_augment(image, keypoints) -> Tuple[Tensor, Tensor]:
 
-    # TODO add color jitter
-    # TODO add random crop
-    # TODO add shifting
-    
     # convert tensors to numpy arrays to use skimage
     image, keypoints = image.squeeze().numpy(), keypoints.numpy()
     h, w = image.shape[-2:]
@@ -324,24 +314,25 @@ class XmlSample:
         self.hr, self.wr = height_ratio, width_ratio
 
     def load_img(self):
-        img_name = self.root / self.filename.attrib["file"]
         # load image from file
+        img_name = self.root / self.filename.attrib["file"]
         img = load_img(img_name)
+
+        # crop image
+        top, left, height, width = self.get_box()
+        img = TT.functional.crop(
+            img,
+            top=top,
+            left=left,
+            height=height,
+            width=width,
+        )
+
         assert_img(img)
         return img
 
     def get_name(self):
         return self.filename.attrib["file"]
-
-    def load_pts(self):
-        # load keypoints from file
-        keypts = []
-        for num in range(68):
-            x_coordinate = int(self.filename[0][num].attrib["x"])
-            y_coordinate = int(self.filename[0][num].attrib["y"])
-            keypts.append([x_coordinate, y_coordinate])
-        keypts = torch.as_tensor(keypts, dtype=torch.float32)
-        return keypts
 
     def get_box(self, adjust=True):
 
@@ -389,32 +380,47 @@ class XmlSample:
 
         return pts
 
+    def get_original_img(self):
+        img_name = self.root / self.filename.attrib["file"]
+        # load image from file
+        img = load_img(img_name)
+        assert_img(img)
+        return img
+
 
 class XmlTrainSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
         super().__init__(train_xml, filename, hr, wr)
+
+    def load_pts(self):
+        # load keypoints from file
+        keypts = []
+        for num in range(68):
+            x_coordinate = int(self.filename[0][num].attrib["x"])
+            y_coordinate = int(self.filename[0][num].attrib["y"])
+            keypts.append([x_coordinate, y_coordinate])
+        keypts = torch.as_tensor(keypts, dtype=torch.float32)
+        return keypts
 
 
 class XmlValidSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
         super().__init__(train_xml, filename, hr, wr)
 
+    def load_pts(self):
+        # load keypoints from file
+        keypts = []
+        for num in range(68):
+            x_coordinate = int(self.filename[0][num].attrib["x"])
+            y_coordinate = int(self.filename[0][num].attrib["y"])
+            keypts.append([x_coordinate, y_coordinate])
+        keypts = torch.as_tensor(keypts, dtype=torch.float32)
+        return keypts
+
 
 class XmlTestSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
         super().__init__(test_xml, filename, hr, wr)
-
-
-class MyXmlTestSample(XmlSample):
-    def __init__(self, filename: ET.Element, hr: float, wr: float):
-        super().__init__(my_test_xml, filename, hr, wr)
-        self.root = MY_DIR
-
-
-class MeXmlSample(XmlSample):
-    def __init__(self, filename: ET.Element, hr: float, wr: float):
-        super().__init__(me_xml, filename, hr, wr)
-        self.root = ME_DIR
 
 
 class LargeTrainDataset(Dataset):
@@ -569,6 +575,55 @@ class LargeTestDataset(Dataset):  # works the same as training set
         return sample.load_img()
 
 
+def save_kaggle(keypts1008: List) -> None:
+    """Saves predicted keypoints of Part 3 test set as a csv file.
+
+    keypts1008: List of 1008 tensors.
+        Each tensor contains the 68 predicted keypoints of a test sample.
+        Each tensor is of shape (68, 2).
+    """
+    N = 1_008
+    assert len(keypts1008) == N, len(keypts1008)
+    keypts1008 = torch.stack(keypts1008).cpu().numpy()
+
+    df = pd.DataFrame(keypts1008.reshape(-1, 1), columns=["Predicted"])
+    df.index.name = "Id"
+    df.to_csv(OUT_DIR / f"{time.time():.0f}.csv")
+
+
+#
+# My Collection
+#
+
+
+class MyXmlTestSample(XmlSample):
+    def __init__(self, filename: ET.Element, hr: float, wr: float):
+        super().__init__(my_test_xml, filename, hr, wr)
+        self.root = MY_DIR
+
+    def get_cropped(self):
+
+        box = self.filename[1].attrib
+
+        # x, y for the top left corner of the box, w, h for box width and height
+        left, top, width, height = (
+            int(box["left"]),
+            int(box["top"]),
+            int(box["width"]),
+            int(box["height"]),
+        )
+
+        # make sure there's no negative indices
+        if top <= 0:
+            height -= abs(top)
+            top = 0
+        if left <= 0:
+            width -= abs(left)
+            left = 0
+
+        return top, left, height, width
+
+
 class MyTestSet(Dataset):
     def __init__(self) -> None:
         super().__init__()
@@ -607,6 +662,44 @@ class MyTestSet(Dataset):
         return sample.load_img()
 
 
+#
+# Me Growing Up - Morph Sequence
+#
+
+
+class MeXmlSample(XmlSample):
+    def __init__(self, filename: ET.Element, hr: float, wr: float):
+        super().__init__(me_xml, filename, hr, wr)
+        self.root = ME_DIR
+
+    def get_crop_box(self):
+        crop_box = self.filename[1].attrib
+        left, top, width, height = (
+            int(crop_box["left"]),
+            int(crop_box["top"]),
+            int(crop_box["width"]),
+            int(crop_box["height"]),
+        )
+        return top, left, height, width
+
+    def get_cropped_img(self) -> np.ndarray:
+        img_name = self.root / self.filename.attrib["file"]
+        img = to_img_arr(img_name)
+        top, left, height, width = self.get_crop_box()
+        cropped = img[top : top + height, left : left + width, :]
+
+        assert_img_type(cropped)
+        return cropped
+
+    def get_cropped_pts(self, pts):
+        orign_pts = self.get_original_pts(pts)
+        top, left, _, _ = self.get_crop_box()
+        cropped_pts = []
+        for (x, y) in orign_pts:
+            cropped_pts.append([x + left, y + top])
+        return np.array(cropped_pts)
+
+
 class MePicsSet(Dataset):
     def __init__(self) -> None:
         super().__init__()
@@ -623,48 +716,17 @@ class MePicsSet(Dataset):
     def __getitem__(self, idx: int):
         sample = self.samples[idx]
         img = sample.load_img()
-
-        # crop image
-        top, left, height, width = sample.get_box()
-        img = TT.functional.crop(
-            img,
-            top=top,
-            left=left,
-            height=height,
-            width=width,
-        )
-        assert_img(img)
-
         img = part3_transform(img)
-
-        assert_img(img)
         return img
 
-    def get_original_img(self, idx: int, cropped=False):
+    def get_color_img(self, idx: int, cropped=True):
         sample = self.samples[idx]
-        img_path = sample.root / sample.get_name()
-        img = skio.imread(img_path)
         if cropped:
-            top, left, height, width = sample.get_box()
-            cropped = img[top : top + width, left : left + width, :]
-            resized = ST.resize(
-                cropped, (500, 500)
-            )  # make them all the same size so they can be passed into morphing sequence
-            return resized
-        return img
+            return sample.get_cropped_img()
+        return sample.get_original_img()
 
-
-def save_kaggle(keypts1008: List) -> None:
-    """Saves predicted keypoints of Part 3 test set as a csv file.
-
-    keypts1008: List of 1008 tensors.
-        Each tensor contains the 68 predicted keypoints of a test sample.
-        Each tensor is of shape (68, 2).
-    """
-    N = 1_008
-    assert len(keypts1008) == N, len(keypts1008)
-    keypts1008 = torch.stack(keypts1008).cpu().numpy()
-
-    df = pd.DataFrame(keypts1008.reshape(-1, 1), columns=["Predicted"])
-    df.index.name = "Id"
-    df.to_csv(OUT_DIR / f"{time.time():.0f}.csv")
+    def get_color_pts(self, idx: int, pts, cropped=True):
+        sample = self.samples[idx]
+        if cropped:
+            return sample.get_cropped_pts(pts)
+        return sample.get_original_pts(pts)
