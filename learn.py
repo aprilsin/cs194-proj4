@@ -83,7 +83,7 @@ def test(test_loader, model):
             imgs.extend(batched_imgs)
             pred_pts.extend(pred_keypts)
 
-    return [imgs, pred_pts]
+    return imgs, pred_pts
 
 
 def train_and_validate(
