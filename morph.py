@@ -270,7 +270,7 @@ def compute_middle_object(
 
 
 def compute_morph_video(
-    im1, im2, im1_pts, im2_pts, out_path, num_frames=NUM_FRAMES, fps=10, boomerang=True
+    im1, im2, im1_pts, im2_pts, out_path, num_frames=NUM_FRAMES, fps=10, boomerang=False
 ):
     im1 = to_img_arr(im1)
     im2 = to_img_arr(im2)
@@ -291,7 +291,7 @@ def compute_morph_video(
     for i, alpha in enumerate(alphas, start=1):
         start = time.time()
         curr_frame, _, _ = compute_middle_object(im1, im2, im1_pts, im2_pts, 1 - alpha)
-        print(f"Frame {i} morph time with alpha {alpha}:", time.time() - start)
+        print(f"Frame {i}: {alpha = } {time.time() - start = }")
         frames.append(curr_frame)
 
     if boomerang:
@@ -315,6 +315,7 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
     assert len(imgs) == len(keypts)
     frames = []
     for i in range(len(imgs) - 1):
+        print(======= {i} =======)
         imgA = imgs[i]
         imgB = imgs[i + 1]
         ptsA = keypts[i]
@@ -340,7 +341,8 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
             curr_frame, _, _ = compute_middle_object(imgA, imgB, ptsA, ptsB, 1 - alpha)
             print(f"Frame {i} morph time with alpha {alpha}:", time.time() - start)
             frames.append(curr_frame)
-
+    
+    print("Saving video . . .")
     metadata = {"title": "Giant Morph Video", "artist": "Me = April Sin"}
     writer = animation.FFMpegWriter(fps=fps, metadata=metadata, bitrate=1800)
     with writer.saving(fig, outfile=filename, dpi=100):
