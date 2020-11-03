@@ -1,0 +1,94 @@
+@import url("https://fonts.googleapis.com/css?family=Actor");
+
+body {
+  background-color: whitesmoke;
+  text-align: left;
+  font-family: "Actor";
+  margin-left: 12%;
+  margin-right: 12%;
+  margin-bottom: 5%;
+  margin-top: 5%;
+}
+header {
+  text-align: right;
+}
+h1,
+h2 {
+  font-family: "Actor";
+  color: black;
+  text-align: center;
+}
+
+h3 {
+  color: rgb(255, 132, 151);
+  padding-top: 20px;
+  padding-bottom: None;
+  font-size: 180%;
+}
+
+h4 {
+  font-size: 120%;
+  padding: None;
+}
+h5 {
+  text-align: center;
+  padding-top: 1%;
+  padding-bottom: 3%;
+}
+code {
+  background-color: rgb(231, 231, 231);
+  padding: 5px 7px;
+  font-size: 105%;
+}
+img {
+  vertical-align: middle;
+  margin: 10px, 100px;
+  width: 320px;
+  max-height: 380px;
+}
+
+img.plot {
+  width: 500px !important;
+  max-height: None !important;
+}
+
+img.part3 {
+  width: 250px !important;
+}
+img.part3_2 {
+  width: 260px !important;
+}
+
+figcaption {
+  margin: 10px 0 0 0;
+  font-family: "Actor", sans-serif;
+  color: #4d4f52;
+}
+
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+  padding: 5px;
+  text-align: center;
+}
+
+.column_3 {
+  flex: 33.33%;
+  padding: 5px;
+  text-align: center;
+}
+
+.column_4 {
+  flex: 25%;
+  padding: 5px;
+  text-align: center;
+}
+
+.column_5 {
+  flex: 20%;
+  padding: 5px;
+  text-align: center;
+}
