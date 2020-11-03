@@ -734,3 +734,19 @@ class MePicsSet(Dataset):
         if cropped:
             return sample.get_cropped_pts(pts)
         return sample.get_original_pts(pts)
+
+    def get_morph_img(self, idx: int):
+        sample = self.samples[idx]
+        cropped = sample.get_cropped_img()
+        resized = ST.resize(cropped, (500, 500))
+        return resized
+
+    def get_morph_pts(self, idx: int, keypts):
+        sample = self.samples[idx]
+        pts = sample.get_cropped_pts(keypts)
+
+        # turn into ratios
+        pts[:, 0] /= 500
+        pts[:, 1] /= 500
+        assert_points(pts)
+        return pts
