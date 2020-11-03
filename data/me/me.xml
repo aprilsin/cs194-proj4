@@ -2,68 +2,68 @@
 <name>My Test Images</name>
 <images>
   <image file="me_2002.jpg">
-    <box height="711" left="384" top="0" width="683">
+    <box height="287" left="54" top="810" width="287">
       </box>
   </image>
-  <image file="me_2003.jpeg">
-    <box height="308" left="191" top="7" width="262">
+  <image file="me_2003.jpg">
+    <box height="208" left="394" top="435" width="208">
       </box>
   </image>
   <image file="me_2011_0.jpg">
-    <box height="663" left="312" top="113" width="497">
+    <box height="315" left="126" top="97" width="315">
       </box>
   </image>
   <image file="me_2011_1.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="384" left="298" top="396" width="384">
       </box>
    </image>
   <image file="me_2012.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="199" left="476" top="171" width="199">
       </box>
    </image>
   <image file="me_2013.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="762" left="863" top="126" width="762">
       </box>
    </image>
   <image file="me_2014_2.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="302" left="778" top="413" width="302">
       </box>
    </image>
   <image file="me_2015.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="422" left="205" top="110" width="422">
       </box>
    </image>
   <image file="me_2016.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="403" left="62" top="18" width="403">
       </box>
    </image>
   <image file="me_2017_0.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="349" left="251" top="120" width="349">
       </box>
    </image>
   <image file="me_2017_1.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="475" left="41" top="72" width="475">
       </box>
    </image>
 
   <image file="me_2018.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="552" left="564" top="245" width="552">
       </box>
    </image>
   <image file="me_2019_0.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="1703" left="517" top="178" width="1703">
       </box>
    </image>
   <image file="me_2019_1.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="393" left="530" top="698" width="393">
       </box>
    </image>
   <image file="me_2020_0.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="307" left="425" top="164" width="307">
       </box>
    </image>
      <image file="me_2020_1.jpg">
-    <box height="982" left="538" top="0" width="985">
+    <box height="979" left="120" top="109" width="979">
       </box>
    </image>
 </images>
