@@ -5,12 +5,15 @@ import os
 import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
+import skimage.io as skio
 from pathlib import Path
-from typing import List, Tuple
+from typing import (
+    List,
+    Tuple,
+)
 
 import numpy as np
 import pandas as pd
-import skimage.io as skio
 import skimage.transform as ST
 import torch
 import torchvision.transforms as TT
@@ -18,7 +21,8 @@ from PIL import Image
 from torch import Tensor
 from torch.utils.data import Dataset
 
-from my_types import assert_img, assert_img_type, assert_points, to_img_arr
+from my_types import assert_img, assert_points, assert_img_type, to_img_arr
+
 
 DATA_DIR = Path("data")
 OUT_DIR = Path("output")
@@ -730,3 +734,19 @@ class MePicsSet(Dataset):
         if cropped:
             return sample.get_cropped_pts(pts)
         return sample.get_original_pts(pts)
+
+    def get_morph_img(self, idx: int):
+        sample = self.samples[idx]
+        cropped = sample.get_cropped_img()
+        resized = ST.resize(cropped, (500, 500))
+        return resized
+
+    def get_morph_pts(self, idx: int, keypts):
+        sample = self.samples[idx]
+        pts = sample.get_cropped_pts(keypts)
+
+        # turn into ratios
+        pts[:, 0] /= 500
+        pts[:, 1] /= 500
+        assert_points(pts)
+        return pts

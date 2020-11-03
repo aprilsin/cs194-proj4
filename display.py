@@ -11,10 +11,12 @@ ToDisplayImage = Union[Tensor, np.ndarray]
 
 
 def to_display_img(img: ToDisplayImage, color=False) -> np.ndarray:
+    if color:
+        assert isinstance(img, np.ndarray), type(img)
+        assert img.ndim == 3, img.shape
+        return img
+
     if isinstance(img, np.ndarray):
-        if color:
-            assert img.ndim == 3, img.shape
-            return img
         assert img.ndim == 2, img.shape
         return img
 
@@ -73,7 +75,7 @@ def show_keypoints(
     """Show image with keypoints."""
 
     # make everything numpy arrays with correct shape
-    image = to_display_img(image, color=True)
+    image = to_display_img(image, color=color)
 
     if truth_points is not None:
         truth_points = to_display_pts(truth_points)
