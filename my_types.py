@@ -11,22 +11,25 @@ from torch import Tensor
 from constants import *
 
 
-def assert_points(pts) -> bool:
+def assert_points(pts, ratio=True) -> bool:
     if isinstance(pts, np.ndarray):
         assert pts.shape[1] == 2
         assert (pts >= 0).all()
-        return True
 
-    if isinstance(pts, Tensor):
+    elif isinstance(pts, Tensor):
         assert pts.ndim == 2, pts.shape
         assert pts.shape[1] == 2, pts.shape
 
+    if ratio:
         # make sure that the keypoints are ratios
         rows = pts[:, 0]
         cols = pts[:, 1]
         # leave some wiggle room so use 1.5 instead of 1
-        assert rows.max() <= 1.5 and cols.max() <= 1.5, f"{rows.max()}, {cols.max()}"
+        assert (
+            rows.max() <= 1.5 and cols.max() <= 1.5
+        ), f"points are not ratios {rows.max()}, {cols.max()}"
         return True
+
     else:
         raise ValueError(f"points of type {type(pts)} not expected.")
 
@@ -69,6 +72,7 @@ def to_img_arr(x: ToImgArray) -> np.ndarray:
 
 def to_points(x: ToPoints) -> np.ndarray:
     if isinstance(x, np.ndarray):
+        assert_points(x)
         return x
     elif isinstance(x, torch.Tensor):
         return x.cpu().detach().numpy()

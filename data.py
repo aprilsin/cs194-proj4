@@ -317,24 +317,6 @@ class XmlSample:
         self.filename = filename
         self.hr, self.wr = height_ratio, width_ratio
 
-    def load_img(self):
-        # load image from file
-        img_name = self.root / self.filename.attrib["file"]
-        img = load_img(img_name)
-
-        # crop image
-        top, left, height, width = self.get_box()
-        img = TT.functional.crop(
-            img,
-            top=top,
-            left=left,
-            height=height,
-            width=width,
-        )
-
-        assert_img(img)
-        return img
-
     def get_name(self):
         return self.filename.attrib["file"]
 
@@ -369,6 +351,51 @@ class XmlSample:
 
         return top, left, height, width
 
+    def load_img(self):
+        # load image from file
+        img_name = self.root / self.filename.attrib["file"]
+        img = load_img(img_name)
+
+        # crop image
+        top, left, height, width = self.get_box()
+        img = TT.functional.crop(
+            img,
+            top=top,
+            left=left,
+            height=height,
+            width=width,
+        )
+
+        assert_img(img)
+        return img
+
+    def load_pts(self):
+        # load keypoints from file
+        keypts = []
+        for num in range(68):
+            x_coordinate = int(self.filename[0][num].attrib["x"])
+            y_coordinate = int(self.filename[0][num].attrib["y"])
+            keypts.append([x_coordinate, y_coordinate])
+        keypts = torch.as_tensor(keypts, dtype=torch.float32)
+
+        top, left, _, _ = self.get_box()
+        # fix keypoints according to crop
+        keypts[:, 0] -= left
+        keypts[:, 1] -= top
+
+        # make keypoints ratios
+        img = self.get_original_img()
+        h, w = img.shape[-2:]
+        keypts[:, 0] /= w
+        keypts[:, 1] /= h
+        return keypts
+
+    def get_original_img(self):
+        img_name = self.root / self.filename.attrib["file"]
+        img = load_img(img_name)
+        assert_img(img)
+        return img
+
     def get_original_pts(self, pts: Tensor) -> Tensor:
 
         # revert ratios keypoints to actual coordinates
@@ -382,49 +409,26 @@ class XmlSample:
         pts[:, 0] += left
         pts[:, 1] += top
 
+        assert_points(pts, ratio=False)
         return pts
-
-    def get_original_img(self):
-        img_name = self.root / self.filename.attrib["file"]
-        # load image from file
-        img = load_img(img_name)
-        assert_img(img)
-        return img
 
 
 class XmlTrainSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
         super().__init__(train_xml, filename, hr, wr)
 
-    def load_pts(self):
-        # load keypoints from file
-        keypts = []
-        for num in range(68):
-            x_coordinate = int(self.filename[0][num].attrib["x"])
-            y_coordinate = int(self.filename[0][num].attrib["y"])
-            keypts.append([x_coordinate, y_coordinate])
-        keypts = torch.as_tensor(keypts, dtype=torch.float32)
-        return keypts
-
 
 class XmlValidSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
         super().__init__(train_xml, filename, hr, wr)
 
-    def load_pts(self):
-        # load keypoints from file
-        keypts = []
-        for num in range(68):
-            x_coordinate = int(self.filename[0][num].attrib["x"])
-            y_coordinate = int(self.filename[0][num].attrib["y"])
-            keypts.append([x_coordinate, y_coordinate])
-        keypts = torch.as_tensor(keypts, dtype=torch.float32)
-        return keypts
-
 
 class XmlTestSample(XmlSample):
     def __init__(self, filename: ET.Element, hr: float, wr: float):
         super().__init__(test_xml, filename, hr, wr)
+
+    def load_pts(self):
+        raise ValueError("Test Set has no keypoints.")
 
 
 class LargeTrainDataset(Dataset):
@@ -432,9 +436,11 @@ class LargeTrainDataset(Dataset):
         super().__init__()
 
         tree = ET.parse(train_xml)
+
         all_files = tree.getroot()[2]
-        assert len(all_files) == 6_666, len(all_files)
         train_files = all_files[:6_000]
+
+        assert len(all_files) == 6_666, len(all_files)
         assert len(train_files) == 6_000, len(train_files)
 
         # initialize all samples in dataset as XmlSample
@@ -448,26 +454,6 @@ class LargeTrainDataset(Dataset):
         img = sample.load_img()
         keypts = sample.load_pts()
 
-        # crop image
-        top, left, height, width = sample.get_box()
-        img = TT.functional.crop(
-            img,
-            top=top,
-            left=left,
-            height=height,
-            width=width,
-        )
-        assert_img(img)
-
-        # fix keypoints according to crop
-        keypts[:, 0] -= left
-        keypts[:, 1] -= top
-
-        # make keypoints ratios
-        h, w = img.shape[-2:]
-        keypts[:, 0] /= w
-        keypts[:, 1] /= h
-
         img = part3_transform(img)
 
         # TODO may want to augment randomly
@@ -479,11 +465,11 @@ class LargeTrainDataset(Dataset):
 
     def get_original_img(self, idx: int):
         sample = self.samples[idx]
-        return sample.load_img()
+        return sample.get_original_img()
 
     def get_original_pts(self, idx: int):
         sample = self.samples[idx]
-        return sample.load_pts()
+        return sample.get_original_pts()
 
 
 class LargeValidDataset(Dataset):
@@ -506,27 +492,8 @@ class LargeValidDataset(Dataset):
         img = sample.load_img()
         keypts = sample.load_pts()
 
-        # crop image
-        top, left, height, width = sample.get_box()
-        img = TT.functional.crop(
-            img,
-            top=top,
-            left=left,
-            height=height,
-            width=width,
-        )
-        assert_img(img)
-
-        # fix keypoints according to crop
-        keypts[:, 0] -= left
-        keypts[:, 1] -= top
-
-        # make keypoints ratios
-        h, w = img.shape[-2:]
-        keypts[:, 0] /= w
-        keypts[:, 1] /= h
-
         img = part3_transform(img)
+        # no augmentation for validation set
 
         assert_img(img)
         assert_points(keypts)
@@ -534,11 +501,11 @@ class LargeValidDataset(Dataset):
 
     def get_original_img(self, idx: int):
         sample = self.samples[idx]
-        return sample.load_img()
+        return sample.get_original_img()
 
     def get_original_pts(self, idx: int):
         sample = self.samples[idx]
-        return sample.load_pts()
+        return sample.get_original_pts()
 
 
 class LargeTestDataset(Dataset):  # works the same as training set
@@ -557,26 +524,17 @@ class LargeTestDataset(Dataset):  # works the same as training set
     def __getitem__(self, idx: int):
         sample = self.samples[idx]
         img = sample.load_img()
-
-        # crop image
-        top, left, height, width = sample.get_box()
-        img = TT.functional.crop(
-            img,
-            top=top,
-            left=left,
-            height=height,
-            width=width,
-        )
-        assert_img(img)
+        # test set has no keypoints
 
         img = part3_transform(img)
+        # no augmentation for test set
 
         assert_img(img)
         return img
 
     def get_original_img(self, idx: int):
         sample = self.samples[idx]
-        return sample.load_img()
+        return sample.get_original_img()
 
 
 def save_kaggle(keypts1008: List) -> None:
@@ -605,28 +563,6 @@ class MyXmlTestSample(XmlSample):
         super().__init__(my_test_xml, filename, hr, wr)
         self.root = MY_DIR
 
-    def get_cropped(self):
-
-        box = self.filename[1].attrib
-
-        # x, y for the top left corner of the box, w, h for box width and height
-        left, top, width, height = (
-            int(box["left"]),
-            int(box["top"]),
-            int(box["width"]),
-            int(box["height"]),
-        )
-
-        # make sure there's no negative indices
-        if top <= 0:
-            height -= abs(top)
-            top = 0
-        if left <= 0:
-            width -= abs(left)
-            left = 0
-
-        return top, left, height, width
-
 
 class MyTestSet(Dataset):
     def __init__(self) -> None:
@@ -644,26 +580,17 @@ class MyTestSet(Dataset):
     def __getitem__(self, idx: int):
         sample = self.samples[idx]
         img = sample.load_img()
-
-        # crop image
-        top, left, height, width = sample.get_box()
-        img = TT.functional.crop(
-            img,
-            top=top,
-            left=left,
-            height=height,
-            width=width,
-        )
-        assert_img(img)
+        # test set has no keypoints
 
         img = part3_transform(img)
+        # no augmentation for test set
 
         assert_img(img)
         return img
 
     def get_original_img(self, idx: int):
         sample = self.samples[idx]
-        return sample.load_img()
+        return sample.get_original_img()
 
 
 #
@@ -687,21 +614,26 @@ class MeXmlSample(XmlSample):
         return top, left, height, width
 
     def get_cropped_img(self) -> np.ndarray:
+
         img_name = self.root / self.filename.attrib["file"]
         img = to_img_arr(img_name)
+
         top, left, height, width = self.get_crop_box()
         cropped = img[top : top + height, left : left + width, :]
 
-        assert_img_type(cropped)
+        assert_img_type(cropped)  # returns colored image
         return cropped
 
     def get_cropped_pts(self, pts):
-        orign_pts = self.get_original_pts(pts)
+        pts = self.get_original_pts(pts)
         top, left, _, _ = self.get_crop_box()
-        cropped_pts = []
-        for (x, y) in orign_pts:
-            cropped_pts.append([x + left, y + top])
-        return np.array(cropped_pts)
+
+        # TODO should it be switched?
+        pts[:, 0] += left
+        pts[:, 1] += top
+
+        assert_points(pts, ratio=False)
+        return pts
 
 
 class MePicsSet(Dataset):
@@ -748,5 +680,6 @@ class MePicsSet(Dataset):
         # turn into ratios
         pts[:, 0] /= 500
         pts[:, 1] /= 500
+
         assert_points(pts)
         return pts
