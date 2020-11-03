@@ -6,11 +6,16 @@ from torch import Tensor
 
 import cnn
 
+
 ToDisplayImage = Union[Tensor, np.ndarray]
 
 
 def to_display_img(img: ToDisplayImage, color=False) -> np.ndarray:
-    if img.ndim == 2 and isinstance(img, np.ndarray):
+    if isinstance(img, np.ndarray):
+        if color:
+            assert img.ndim == 3, img.shape
+            return img
+        assert img.ndim == 2, img.shape
         return img
 
     assert isinstance(img, Tensor), type(img)
@@ -68,8 +73,7 @@ def show_keypoints(
     """Show image with keypoints."""
 
     # make everything numpy arrays with correct shape
-    image = to_display_img(image)
-    assert image.ndim == 2 or image.ndim == 3, image.shape
+    image = to_display_img(image, color=True)
 
     if truth_points is not None:
         truth_points = to_display_pts(truth_points)
