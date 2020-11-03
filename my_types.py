@@ -10,26 +10,32 @@ from torch import Tensor
 
 from constants import *
 
-
-def assert_points(pts, ratio=True) -> bool:
+def assert_points(pts, ratio=True) -> bool: #TODO make ratio a "must" variable with *,
     if isinstance(pts, np.ndarray):
         assert pts.shape[1] == 2
         assert (pts >= 0).all()
+        if ratio:
+            # make sure that the keypoints are ratios
+            rows = pts[:, 0]
+            cols = pts[:, 1]
+            # leave some wiggle room so use 1.5 instead of 1
+            assert (
+                rows.max() <= 1.5 and cols.max() <= 1.5
+            ), f"points are not ratios {rows.max()}, {cols.max()}"
+        return True
 
     elif isinstance(pts, Tensor):
         assert pts.ndim == 2, pts.shape
         assert pts.shape[1] == 2, pts.shape
-
-    if ratio:
-        # make sure that the keypoints are ratios
-        rows = pts[:, 0]
-        cols = pts[:, 1]
-        # leave some wiggle room so use 1.5 instead of 1
-        assert (
-            rows.max() <= 1.5 and cols.max() <= 1.5
-        ), f"points are not ratios {rows.max()}, {cols.max()}"
+        if ratio:
+            # make sure that the keypoints are ratios
+            rows = pts[:, 0]
+            cols = pts[:, 1]
+            # leave some wiggle room so use 1.5 instead of 1
+            assert (
+                rows.max() <= 1.5 and cols.max() <= 1.5
+            ), f"points are not ratios {rows.max()}, {cols.max()}"
         return True
-
     else:
         raise ValueError(f"points of type {type(pts)} not expected.")
 
@@ -41,7 +47,13 @@ def assert_img(img):
     assert all(x > 0 for x in list(img.shape)), img.shape
     return True
 
-
+def to_ratios(pts, h, w):
+    assert_points(pts, ratio=False)
+    pts[:, 0] /= h
+    pts[:, 1] /= w
+    return pts
+        
+    
 ToImgArray = Union[os.PathLike, np.ndarray]
 ZeroOneFloatArray = np.ndarray
 UbyteArray = np.ndarray

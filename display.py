@@ -5,6 +5,7 @@ import numpy as np
 from torch import Tensor
 
 import cnn
+from my_types import assert_points
 
 ToDisplayImage = Union[Tensor, np.ndarray]
 
@@ -46,6 +47,7 @@ def to_display_pts(pts: ToDisplayPoints) -> np.ndarray:
 
     if isinstance(pts, np.ndarray):
         assert pts.ndim == 2, pts.shape
+        assert_points(pts, ratio=True)
         return pts
     pts = pts.detach().cpu()
 
@@ -56,11 +58,14 @@ def to_display_pts(pts: ToDisplayPoints) -> np.ndarray:
     if pts.ndim == 2:
         assert list(pts.shape)[1] == 2
         pts = pts.numpy()
+        assert_points(pts, ratio=True)
         return pts
     if pts.ndim == 3:
         # remove dimension of size 1 for plt
         pts = pts.squeeze(0)
-        return pts.numpy()
+        pts = pts.numpy()
+        assert_points(pts, ratio=True)
+        return pts
     else:
         raise ValueError(type(pts), pts.shape)
 

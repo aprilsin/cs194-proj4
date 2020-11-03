@@ -76,7 +76,6 @@ def load_asf(file: os.PathLike) -> Tensor:  # for part 1 and 2
     assert_points(points)
     return points
 
-
 #
 # Part 1
 #
@@ -374,8 +373,8 @@ class XmlSample:
             keypts.append([x_coordinate, y_coordinate])
         keypts = torch.as_tensor(keypts, dtype=torch.float32)
 
-        top, left, _, _ = self.get_box()
         # fix keypoints according to crop
+        top, left, _, _ = self.get_box()
         keypts[:, 0] -= left
         keypts[:, 1] -= top
 
@@ -395,16 +394,15 @@ class XmlSample:
     def get_original_pts(self, pts: Tensor) -> Tensor:
 
         # revert ratios keypoints to actual coordinates
-        img = self.load_img()
+        img = self.get_original_img()
         h, w = img.shape[-2:]
         pts[:, 0] *= w
         pts[:, 1] *= h
 
-        # fix keypoints according to crop
+        # fix keypoints according to face crop
         top, left, _, _ = self.get_box()
         pts[:, 0] += left
         pts[:, 1] += top
-
         assert_points(pts, ratio=False)
         return pts
 
@@ -622,12 +620,12 @@ class MeXmlSample(XmlSample):
 
     def get_cropped_pts(self, pts):
         pts = self.get_original_pts(pts)
+        assert_points(pts, ratio=False)
         top, left, _, _ = self.get_crop_box()
 
         # TODO should it be switched?
         pts[:, 0] += left
         pts[:, 1] += top
-
         assert_points(pts, ratio=False)
         return pts
 
@@ -650,18 +648,22 @@ class MePicsSet(Dataset):
         img = sample.load_img()
         img = part3_transform(img)
         return img
-
-    def get_color_img(self, idx: int, cropped=True):
+    
+    def get_original_img(self, idx:int):
         sample = self.samples[idx]
-        if cropped:
-            return sample.get_cropped_img()
         return sample.get_original_img()
-
-    def get_color_pts(self, idx: int, pts, cropped=True):
+    
+    def get_cropped_img(self, idx:int):
         sample = self.samples[idx]
-        if cropped:
-            return sample.get_cropped_pts(pts)
+        return sample.get_cropped_img()
+    
+    def get_original_pts(self, idx:int, pts):
+        sample = self.samples[idx]
         return sample.get_original_pts(pts)
+    
+    def get_cropped_pts(self, idx:int, pts):
+        sample = self.samples[idx]
+        return sample.get_cropped_pts(pts)
 
     def get_morph_img(self, idx: int):
         sample = self.samples[idx]
