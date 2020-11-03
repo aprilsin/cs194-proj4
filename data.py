@@ -10,6 +10,7 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+import skimage as sk
 import skimage.io as skio
 import skimage.transform as ST
 import torch
@@ -387,23 +388,28 @@ class XmlSample:
 
     def get_original_img(self):
         img_name = self.root / self.filename.attrib["file"]
-        img = load_img(img_name)
-        assert_img(img)
+        img = skio.imread(img_name)
+        img = sk.img_as_float(img)
+        assert_img_type(img)
         return img
 
     def get_original_pts(self, pts: Tensor) -> Tensor:
-
+        assert_points(pts, ratio=False)
+        pts = pts.cpu().detach().numpy()
         # revert ratios keypoints to actual coordinates
         img = self.get_original_img()
         h, w = img.shape[-2:]
-        pts[:, 0] *= w
-        pts[:, 1] *= h
+        pts[:, 0] *= h
+        pts[:, 1] *= w
 
         # fix keypoints according to face crop
         top, left, _, _ = self.get_box()
         pts[:, 0] += left
         pts[:, 1] += top
-        assert_points(pts, ratio=False)
+        
+#         pts[:, 0] /= h
+#         pts[:, 1] /= w
+#         assert_points(pts, ratio=True)
         return pts
 
 
@@ -628,6 +634,9 @@ class MeXmlSample(XmlSample):
         pts[:, 1] += top
         assert_points(pts, ratio=False)
         return pts
+    
+#     def get_original_pts(self, pts):
+        
 
 
 class MePicsSet(Dataset):

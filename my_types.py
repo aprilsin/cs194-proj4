@@ -47,10 +47,11 @@ def assert_img(img):
     assert all(x > 0 for x in list(img.shape)), img.shape
     return True
 
-def to_ratios(pts, h, w):
+def to_ratios(pts, h, w)->np.ndarray:
     assert_points(pts, ratio=False)
     pts[:, 0] /= h
     pts[:, 1] /= w
+    assert_points(pts, ratio=True)
     return pts
         
     

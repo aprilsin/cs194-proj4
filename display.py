@@ -75,33 +75,38 @@ def show_keypoints(
     truth_points: Union[Tensor, np.ndarray] = None,
     pred_points: Union[Tensor, np.ndarray] = None,
     color: bool = False,
+    ratio:bool = True,
 ) -> None:
     """Show image with keypoints."""
+    cmap = "viridis" if color else "gray"
+    if ratio:
+        # make everything numpy arrays with correct shape
+        image = to_display_img(image, color=color)
 
-    # make everything numpy arrays with correct shape
-    image = to_display_img(image, color=color)
+        if truth_points is not None:
+            truth_points = to_display_pts(truth_points)
+            assert truth_points.ndim == 2 and truth_points.shape[1] == 2, truth_points.shape
 
-    if truth_points is not None:
-        truth_points = to_display_pts(truth_points)
-        assert truth_points.ndim == 2 and truth_points.shape[1] == 2, truth_points.shape
-
-    if pred_points is not None:
-        pred_points = to_display_pts(pred_points)
-        assert pred_points.ndim == 2 and pred_points.shape[1] == 2, pred_points.shape
+        if pred_points is not None:
+            pred_points = to_display_pts(pred_points)
+            assert pred_points.ndim == 2 and pred_points.shape[1] == 2, pred_points.shape
 
     h, w = image.shape[0], image.shape[1]
 
     # show image and plot keypoints
     plt.figure()
-    cmap = "viridis" if color else "gray"
     plt.imshow(image, cmap)
     if truth_points is not None:
+#         tp = truth_points.copy()
+        tp = truth_points
         plt.scatter(
-            truth_points[:, 0] * w, truth_points[:, 1] * h, s=35, c="g", marker="x"
+            tp[:, 0] * w, tp[:, 1] * h, s=35, c="g", marker="x"
         )
     if pred_points is not None:
+#         pp = pred_points.copy()
+        pp = pred_points
         plt.scatter(
-            pred_points[:, 0] * w, pred_points[:, 1] * h, s=35, c="r", marker="x"
+            pp[:, 0] * w, pp[:, 1] * h, s=35, c="r", marker="x"
         )
     plt.pause(0.001)  # pause a bit so that plots are updated
     plt.show()
