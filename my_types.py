@@ -7,7 +7,7 @@ import numpy as np
 import skimage.io as io
 from skimage.util import img_as_float
 from torch import Tensor
-
+import copy
 from constants import *
 
 def assert_points(pts, ratio=True) -> bool: #TODO make ratio a "must" variable with *,
@@ -49,6 +49,7 @@ def assert_img(img):
 
 def to_ratios(pts, h, w)->np.ndarray:
     assert_points(pts, ratio=False)
+    pts = copy.deepcopy(pts)
     pts[:, 0] /= h
     pts[:, 1] /= w
     assert_points(pts, ratio=True)

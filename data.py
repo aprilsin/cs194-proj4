@@ -399,17 +399,13 @@ class XmlSample:
         # revert ratios keypoints to actual coordinates
         img = self.get_original_img()
         h, w = img.shape[-2:]
-        pts[:, 0] *= h
-        pts[:, 1] *= w
+        pts[:, 0] *= w
+        pts[:, 1] *= h
 
-        # fix keypoints according to face crop
+        # fix keypoints according to crop
         top, left, _, _ = self.get_box()
         pts[:, 0] += left
         pts[:, 1] += top
-        
-#         pts[:, 0] /= h
-#         pts[:, 1] /= w
-#         assert_points(pts, ratio=True)
         return pts
 
 
@@ -635,7 +631,8 @@ class MeXmlSample(XmlSample):
         assert_points(pts, ratio=False)
         return pts
     
-#     def get_original_pts(self, pts):
+    def get_original_pts(self, pts):
+        # TODO
         
 
 
