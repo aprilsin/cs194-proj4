@@ -10,7 +10,7 @@ from torch import Tensor
 import copy
 from constants import *
 
-def assert_points(pts, ratio=True) -> bool: #TODO make ratio a "must" variable with *,
+def assert_points(pts, *,ratio=True) -> bool: #TODO make ratio a "must" variable with *,
     if isinstance(pts, np.ndarray):
         assert pts.shape[1] == 2
         assert (pts >= 0).all()
@@ -86,16 +86,18 @@ def to_img_arr(x: ToImgArray) -> np.ndarray:
 
 def to_points(x: ToPoints) -> np.ndarray:
     if isinstance(x, np.ndarray):
-        assert_points(x)
+        assert_points(x, ratio=False)
         return x
     elif isinstance(x, torch.Tensor):
         return x.cpu().detach().numpy()
+    
     elif isinstance(x, (str, Path, os.PathLike)):
         x = Path(x)
         if x.suffix in (".pkl", ".p"):
             points = pickle.load(open(x, "rb"))
-            assert_points(points)
+            assert_points(points, ratio=False)
             return points
+        
         elif x.suffix == ".asf":
             asf = open(x, "r")
             lines_read = asf.readlines()
@@ -103,7 +105,6 @@ def to_points(x: ToPoints) -> np.ndarray:
             lines = []
             for i in range(16, num_pts + 16):
                 lines.append(lines_read[i])
-
             points = []
             for line in lines:
                 data = line.split(" \t")
@@ -111,7 +112,7 @@ def to_points(x: ToPoints) -> np.ndarray:
                 r = float(data[3])  # y coordinates = rows
                 points.append((r, c))
             points = np.array(points)
-            assert_points(points)
+            assert_points(points, ratio=True)
             return points
         else:
             raise ValueError(f"Didn't expect type {type(x)}")
@@ -120,7 +121,7 @@ def to_points(x: ToPoints) -> np.ndarray:
 def assert_img_type(img: np.ndarray) -> bool:
     """ Check image data type """
     assert isinstance(img, np.ndarray), f"expect ndarray but got {type(img)}"
-    assert img.dtype == "float64", img.dtype
+#     assert img.dtype == "float32", img.dtype
     assert np.max(img) <= 1.0 and np.min(img) >= 0.0, (np.min(img), np.max(img))
     assert np.ndim(img) == 3
     return True

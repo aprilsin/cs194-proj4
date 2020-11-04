@@ -123,8 +123,8 @@ def warp_img(
     triangulation: Delaunay,
 ) -> np.ndarray:
     assert_img_type(img)
-    assert_points(img_pts)
-    assert_points(target_pts)
+    assert_points(img_pts, ratio=False)
+    assert_points(target_pts, ratio=False)
 
     h, w, c = img.shape
     warped = np.zeros_like(img)
@@ -315,7 +315,7 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
     assert len(imgs) == len(keypts)
     frames = []
     for i in range(len(imgs) - 1):
-        print("======= {i} =======")
+        print(f"======= {i} =======")
         imgA = imgs[i]
         imgB = imgs[i + 1]
         ptsA = keypts[i]
@@ -343,7 +343,7 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
             frames.append(curr_frame)
 
     start = time.time()
-    print("Saving video from {len(frames)} frames.")
+    print(f"Saving video from {len(frames)} frames.")
     metadata = {"title": "Giant Morph Video", "artist": "Me = April Sin"}
     writer = animation.FFMpegWriter(fps=fps, metadata=metadata, bitrate=1800)
     with writer.saving(fig, outfile=filename, dpi=100):
@@ -351,4 +351,4 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
             assert_img_type(frame)
             plt.imshow(frame)
             writer.grab_frame()
-    print("Video saved. (time taken = {time.time() - start})")
+    print(f"Video saved. (time taken = {time.time() - start})")

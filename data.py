@@ -390,12 +390,14 @@ class XmlSample:
         img_name = self.root / self.filename.attrib["file"]
         img = skio.imread(img_name)
         img = sk.img_as_float(img)
+        if img.ndim == 2:
+           return np.dstack((img, img, img))
         assert_img_type(img)
         return img
 
     def get_original_pts(self, pts: Tensor) -> Tensor:
         assert_points(pts, ratio=False)
-        pts = pts.cpu().detach().numpy()
+        pts = pts.cpu().detach()
         # revert ratios keypoints to actual coordinates
         img = self.get_original_img()
         h, w = img.shape[-2:]
@@ -541,6 +543,7 @@ def save_kaggle(keypts1008: List) -> None:
         Each tensor is of shape (68, 2).
     """
     N = 1_008
+
     assert len(keypts1008) == N, len(keypts1008)
     keypts1008 = torch.stack(keypts1008).cpu().numpy()
 
@@ -633,8 +636,8 @@ class MeXmlSample(XmlSample):
     
     def get_original_pts(self, pts):
         # TODO
+        pass
         
-
 
 class MePicsSet(Dataset):
     def __init__(self) -> None:
@@ -685,5 +688,5 @@ class MePicsSet(Dataset):
         pts[:, 0] /= 500
         pts[:, 1] /= 500
 
-        assert_points(pts)
+        assert_points(pts, ratio=True)
         return pts

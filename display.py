@@ -97,7 +97,7 @@ def show_keypoints(
     plt.figure()
     plt.imshow(image, cmap)
     if truth_points is not None:
-#         tp = truth_points.copy()
+        tp = truth_points.copy()
         tp = truth_points
         plt.scatter(
             tp[:, 0] * w, tp[:, 1] * h, s=35, c="g", marker="x"
