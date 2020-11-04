@@ -4,7 +4,10 @@ import copy
 import math
 import time
 from pathlib import Path
-from typing import Tuple, Union
+from typing import (
+    Tuple,
+    Union,
+)
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,11 +17,15 @@ from matplotlib import animation
 from scipy import interpolate
 from scipy.spatial import Delaunay
 from skimage import transform
-from skimage.util import img_as_float, img_as_ubyte
+from skimage.util import (
+    img_as_float,
+    img_as_ubyte,
+)
 
 import utils
 from constants import *
 from my_types import *
+
 
 #######################
 #    DEFINE SHAPES    #

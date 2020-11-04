@@ -6,7 +6,10 @@ import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
-from typing import List, Tuple
+from typing import (
+    List,
+    Tuple,
+)
 
 import numpy as np
 import pandas as pd
@@ -19,7 +22,13 @@ from PIL import Image
 from torch import Tensor
 from torch.utils.data import Dataset
 
-from my_types import assert_img, assert_img_type, assert_points, to_img_arr
+from my_types import (
+    assert_img,
+    assert_img_type,
+    assert_points,
+    to_img_arr,
+)
+
 
 DATA_DIR = Path("data")
 OUT_DIR = Path("output")
@@ -76,6 +85,7 @@ def load_asf(file: os.PathLike) -> Tensor:  # for part 1 and 2
     assert len(points) == num_pts, len(points)
     assert_points(points)
     return points
+
 
 #
 # Part 1
@@ -391,7 +401,7 @@ class XmlSample:
         img = skio.imread(img_name)
         img = sk.img_as_float(img)
         if img.ndim == 2:
-           return np.dstack((img, img, img))
+            return np.dstack((img, img, img))
         assert_img_type(img)
         return img
 
@@ -633,11 +643,11 @@ class MeXmlSample(XmlSample):
         pts[:, 1] += top
         assert_points(pts, ratio=False)
         return pts
-    
+
     def get_original_pts(self, pts):
         # TODO
         pass
-        
+
 
 class MePicsSet(Dataset):
     def __init__(self) -> None:
@@ -657,20 +667,20 @@ class MePicsSet(Dataset):
         img = sample.load_img()
         img = part3_transform(img)
         return img
-    
-    def get_original_img(self, idx:int):
+
+    def get_original_img(self, idx: int):
         sample = self.samples[idx]
         return sample.get_original_img()
-    
-    def get_cropped_img(self, idx:int):
+
+    def get_cropped_img(self, idx: int):
         sample = self.samples[idx]
         return sample.get_cropped_img()
-    
-    def get_original_pts(self, idx:int, pts):
+
+    def get_original_pts(self, idx: int, pts):
         sample = self.samples[idx]
         return sample.get_original_pts(pts)
-    
-    def get_cropped_pts(self, idx:int, pts):
+
+    def get_cropped_pts(self, idx: int, pts):
         sample = self.samples[idx]
         return sample.get_cropped_pts(pts)
 

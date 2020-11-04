@@ -7,6 +7,7 @@ from torch import Tensor
 import cnn
 from my_types import assert_points
 
+
 ToDisplayImage = Union[Tensor, np.ndarray]
 
 
@@ -75,7 +76,7 @@ def show_keypoints(
     truth_points: Union[Tensor, np.ndarray] = None,
     pred_points: Union[Tensor, np.ndarray] = None,
     color: bool = False,
-    ratio:bool = True,
+    ratio: bool = True,
 ) -> None:
     """Show image with keypoints."""
     cmap = "viridis" if color else "gray"
@@ -85,11 +86,15 @@ def show_keypoints(
 
         if truth_points is not None:
             truth_points = to_display_pts(truth_points)
-            assert truth_points.ndim == 2 and truth_points.shape[1] == 2, truth_points.shape
+            assert (
+                truth_points.ndim == 2 and truth_points.shape[1] == 2
+            ), truth_points.shape
 
         if pred_points is not None:
             pred_points = to_display_pts(pred_points)
-            assert pred_points.ndim == 2 and pred_points.shape[1] == 2, pred_points.shape
+            assert (
+                pred_points.ndim == 2 and pred_points.shape[1] == 2
+            ), pred_points.shape
 
     h, w = image.shape[0], image.shape[1]
 
@@ -99,15 +104,11 @@ def show_keypoints(
     if truth_points is not None:
         tp = truth_points.copy()
         tp = truth_points
-        plt.scatter(
-            tp[:, 0] * w, tp[:, 1] * h, s=35, c="g", marker="x"
-        )
+        plt.scatter(tp[:, 0] * w, tp[:, 1] * h, s=35, c="g", marker="x")
     if pred_points is not None:
-#         pp = pred_points.copy()
+        #         pp = pred_points.copy()
         pp = pred_points
-        plt.scatter(
-            pp[:, 0] * w, pp[:, 1] * h, s=35, c="r", marker="x"
-        )
+        plt.scatter(pp[:, 0] * w, pp[:, 1] * h, s=35, c="r", marker="x")
     plt.pause(0.001)  # pause a bit so that plots are updated
     plt.show()
 

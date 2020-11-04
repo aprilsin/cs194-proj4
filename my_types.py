@@ -1,16 +1,23 @@
+import copy
 import os
 import pickle
 from pathlib import Path
-from typing import Sequence, Union
+from typing import (
+    Sequence,
+    Union,
+)
 
 import numpy as np
 import skimage.io as io
 from skimage.util import img_as_float
 from torch import Tensor
-import copy
+
 from constants import *
 
-def assert_points(pts, *,ratio=True) -> bool: #TODO make ratio a "must" variable with *,
+
+def assert_points(
+    pts, *, ratio=True
+) -> bool:  # TODO make ratio a "must" variable with *,
     if isinstance(pts, np.ndarray):
         assert pts.shape[1] == 2
         assert (pts >= 0).all()
@@ -47,15 +54,16 @@ def assert_img(img):
     assert all(x > 0 for x in list(img.shape)), img.shape
     return True
 
-def to_ratios(pts, h, w)->np.ndarray:
+
+def to_ratios(pts, h, w) -> np.ndarray:
     assert_points(pts, ratio=False)
     pts = copy.deepcopy(pts)
     pts[:, 0] /= h
     pts[:, 1] /= w
     assert_points(pts, ratio=True)
     return pts
-        
-    
+
+
 ToImgArray = Union[os.PathLike, np.ndarray]
 ZeroOneFloatArray = np.ndarray
 UbyteArray = np.ndarray
@@ -90,14 +98,14 @@ def to_points(x: ToPoints) -> np.ndarray:
         return x
     elif isinstance(x, torch.Tensor):
         return x.cpu().detach().numpy()
-    
+
     elif isinstance(x, (str, Path, os.PathLike)):
         x = Path(x)
         if x.suffix in (".pkl", ".p"):
             points = pickle.load(open(x, "rb"))
             assert_points(points, ratio=False)
             return points
-        
+
         elif x.suffix == ".asf":
             asf = open(x, "r")
             lines_read = asf.readlines()
@@ -121,7 +129,7 @@ def to_points(x: ToPoints) -> np.ndarray:
 def assert_img_type(img: np.ndarray) -> bool:
     """ Check image data type """
     assert isinstance(img, np.ndarray), f"expect ndarray but got {type(img)}"
-#     assert img.dtype == "float32", img.dtype
+    #     assert img.dtype == "float32", img.dtype
     assert np.max(img) <= 1.0 and np.min(img) >= 0.0, (np.min(img), np.max(img))
     assert np.ndim(img) == 3
     return True
