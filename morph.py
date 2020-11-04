@@ -346,11 +346,14 @@ def make_giant_video(imgs, keypts, fps: int = 25, filename=None):
         for i, alpha in enumerate(alphas, start=1):
             start = time.time()
             curr_frame, _, _ = compute_middle_object(imgA, imgB, ptsA, ptsB, 1 - alpha)
-            print(f"Frame {i} morph time with alpha {alpha}:", time.time() - start)
+            print(f"Frame {i}: {alpha = }, time taken = {time.time() - start}")
             frames.append(curr_frame)
 
     start = time.time()
     print(f"Saving video from {len(frames)} frames.")
+
+    if filename is None:
+        filename = f"{time.time():.0f}.mp4"
     metadata = {"title": "Giant Morph Video", "artist": "Me = April Sin"}
     writer = animation.FFMpegWriter(fps=fps, metadata=metadata, bitrate=1800)
     with writer.saving(fig, outfile=filename, dpi=100):
